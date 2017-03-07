@@ -1,0 +1,9 @@
+/* CSS for OpenResponseXBlock */
+
+.openresponse_block .count {
+    font-weight: bold;
+}
+
+.openresponse_block p {
+    cursor: pointer;
+}

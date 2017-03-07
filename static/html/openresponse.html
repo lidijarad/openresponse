@@ -1,0 +1,20 @@
+<div class="openresponse" id="content">
+
+	<div id="answers">
+		{% autoescape off %}
+ 			{{ layout }}
+		{% endautoescape %}
+
+	</div>
+
+	{% if pdf %}
+		<div id="editor"></div>
+		<button id="cmd">generate PDF</button>
+	{% endif %}
+
+	{% if not pdf %}
+		<p></p>
+	{% endif %}
+
+</div>
+
