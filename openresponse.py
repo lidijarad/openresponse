@@ -46,7 +46,6 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
 	scope=Scope.settings
     )	
     
-
     string_html = String(
 	help="Include some HTML formatting (introductory paragraphs or headings) that you would like to"
 	     " accompany the summary of questions and answers.",
@@ -77,6 +76,14 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
             except:
                 InvalidKeyError
 
+    def get_xblocks_async(self, data, suffix=''):
+    	"""
+    	Called when submitting the form in studio to get the xblock question and answer
+
+    	"""
+    	self.xblock_list = data['xblock_list']
+    	return { 'xblock_list': self.xblock_list}
+
     def get_freetextresponse_field_names(self):
 
         question_field_name = "prompt"
@@ -94,7 +101,6 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
             raise Exception('The xblock_type field names do not exist. Add function to handle your specific XBlock.')
 
 
-    # TO-DO: change this view to display your data your own way.
     def student_view(self, context=None):
 		"""
 		The primary view of the OpenResponseXBlock, shown to students
@@ -111,7 +117,6 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
 							<p>{}</p>'''.format(q, a) for q, a in blocks)
 
 		layout = self.string_html
-
 		layout = layout.replace('<p>CONTENT</p>', qa_str)
 
 		context = {

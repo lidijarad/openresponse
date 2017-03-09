@@ -80,7 +80,10 @@
               </div>
             {% elif field.type == 'generic' or field.type == 'list' or field.type == 'set' %}
               {# Show a textarea so we can edit it as a JSON string #}
-              <textarea class="field-data-control" data-field-name="{{field.name}}" id="xb-field-edit-{{field.name}}" rows=5 cols=70>{{field.value}}</textarea>
+              <input type="text" id="xblock-list" rows=5 cols=70></input>
+              
+              <input type="button" id="add-btn" value="Add Xblock"></input>
+              
             {% else %}
               Unsupported field type. This setting cannot be edited.
             {% endif %}

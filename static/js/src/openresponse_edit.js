@@ -138,6 +138,32 @@ function StudioEditableXBlockMixin(runtime, element) {
         });
     };
 
+    $(function ($) {
+        $('#add-btn').click(function(eventObject) {
+            console.log('hi')
+            var array = Array();
+            var x = 0;
+            array[x] = $('#xblock-list').val();
+            $('#xblock-list').val("");
+            console.log(array)
+            var handlerUrl = runtime.handlerUrl(element, "get_xblocks_async");
+            var xblock_list = $('#xblock-list').val();
+            console.log(xblock_list)
+            eventObject.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: handlerUrl,
+                data: JSON.stringify({"xblock_list": xblock_list}),
+                success: function(data){
+                    console.log(data)
+                }
+            });
+
+        });
+
+    });
+
+
     $('.save-button', element).bind('click', function(e) {
         e.preventDefault();
         var values = {};
