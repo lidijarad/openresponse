@@ -75,7 +75,8 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
                 yield self.runtime.get_block(usage_key)
             except:
                 InvalidKeyError
-
+                
+    @XBlock.json_handler
     def get_xblocks_async(self, data, suffix=''):
     	"""
     	Called when submitting the form in studio to get the xblock question and answer
