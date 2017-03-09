@@ -75,15 +75,15 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
                 yield self.runtime.get_block(usage_key)
             except:
                 InvalidKeyError
-                
+
     @XBlock.json_handler
     def get_xblocks_async(self, data, suffix=''):
     	"""
     	Called when submitting the form in studio to get the xblock question and answer
 
     	"""
-    	self.xblock_list = data['xblock_list']
-    	return { 'xblock_list': self.xblock_list}
+    	self.new_xblock_list = data['xblock_list']
+    	return { 'xblock_list': self.new_xblock_list}
 
     def get_freetextresponse_field_names(self):
 
