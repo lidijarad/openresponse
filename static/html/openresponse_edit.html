@@ -90,11 +90,10 @@
                         <input type="text" name="typebox" id="xblock-type{{forloop.counter}}" value="{{item2}}"/>
                       </div>
                     </div>
-                  </div>
-                {% endfor %}
-
-                <input type="button" id="add-btn" value="Add Xblock"></input>         
-              </div>
+                    {% endfor %}
+                </div>
+                <input type="button" id="add-btn" value="Add Xblock"></input>
+              </div>       
             {% else %}
               Unsupported field type. This setting cannot be edited.
             {% endif %}
