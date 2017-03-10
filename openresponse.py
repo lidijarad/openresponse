@@ -41,8 +41,7 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
 	help='''Add the component ID's of the XBlocks you wish to include in the summary. 
              Make sure your ID's are wrapped in double quote marks and are separated by a comma.
              Eg:["ffd9bcbd65ac454e9c5c0aae26edb5db", "6899073dca1e4d9b83d54a846f141031"]''',
-	default=[],
-	list_style='set',
+	default=[['12232413542', 'freetextresponse']],
 	scope=Scope.settings
     )	
     
@@ -60,7 +59,7 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
     	scope=Scope.settings,
     )
 
-    editable_fields = ('display_name', 'string_html', 'xblock_type', 'xblock_list', 'allow_pdf',)
+    editable_fields = ('display_name', 'string_html', 'xblock_list', 'allow_pdf',)
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -82,8 +81,8 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
     	Called when submitting the form in studio to get the xblock question and answer
 
     	"""
-    	self.new_xblock_list = data['xblock_list']
-    	return { 'xblock_list': self.new_xblock_list}
+    	self.xblock_list = data['xblock_list']
+    	return { 'xblock_list': self.xblock_list}
 
     def get_freetextresponse_field_names(self):
 
@@ -144,7 +143,9 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
         Render a form for editing this XBlock
         """
         fragment = Fragment()
-        context = {'fields': []}
+        context = {'fields': [], 
+        			'xblock_list': self.xblock_list,
+        		  }
         # Build a list of all the fields that can be edited:
         for field_name in self.editable_fields:
             field = self.fields[field_name]

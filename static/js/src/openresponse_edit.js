@@ -138,38 +138,87 @@ function StudioEditableXBlockMixin(runtime, element) {
         });
     };
 
-    var array = Array();
-    var x = 0;
-    $(function ($) {
-        $('#add-btn').click(function(eventObject) {
-            console.log('hi')
+    // var array = Array();
+    // var x = 0;
+    // $(function ($) {
+    //     $('#addButton').click(function(eventObject) {
+    //         console.log('hi')
             
-            array[x] = $('#xblock-list').val();
-            x++;
-            $('#xblock-list').val("");
-            console.log(array)
-            var handlerUrl = runtime.handlerUrl(element, "get_xblocks_async");
-            var xblock_list = array;
-            console.log(xblock_list)
-            eventObject.preventDefault();
-            $.ajax({
-                type: "POST",
-                url: handlerUrl,
-                data: JSON.stringify({"xblock_list": xblock_list}),
-                success: function(data){
-                    console.log(data)
-                }
-            });
+    //         array[x] = $('#xblock-list').val();
+    //         x++;
+    //         $('#xblock-list').val("");
+    //         console.log(array)
+    //         var handlerUrl = runtime.handlerUrl(element, "get_xblocks_async");
+    //         var xblock_list = array;
+    //         console.log(xblock_list)
+    //         eventObject.preventDefault();
+    //         $.ajax({
+    //             type: "POST",
+    //             url: handlerUrl,
+    //             data: JSON.stringify({"xblock_list": xblock_list}),
+    //             success: function(data){
+    //                 console.log(data)
+    //             }
+    //         });
+
+    //     });
+    // });
+    
+    
+
+    $(function ($) {
+
+        // Count all the number of items in the Xblock list
+        var counter = 0;
+        $(element).find('.xblock-list-item').each(function (i) {
+           
+           counter++;
+           console.log(counter)
+        });
+        console.log(counter)
+
+        $("#add-btn").click(function () {
+            var newTextBoxDiv = $(document.createElement('div')).attr("id", 'TextBoxDiv' + counter+1);
+            newTextBoxDiv.after().html('<label>Xblock #'+ (counter+1) + ' : </label>' +
+                '<div class="xblock-list-item"><input type="text"' + '" id="xblock-id' + (counter+1) + '" value=""/>' +
+                '<input type="text"' + '" id="xblock-type' + (counter+1) + '" value=""/></div>'
+                );
+
+            newTextBoxDiv.appendTo("#TextBoxesGroup");
+            counter++;
 
         });
 
+
     });
+
+    // On submit I need to somehow send my data and save it to the correct field value
+    // Some thing like this
+
+    
 
 
     $('.save-button', element).bind('click', function(e) {
         e.preventDefault();
         var values = {};
         var notSet = []; // List of field names that should be set to default values
+
+        var xblockList = [];
+
+        $(element).find('.xblock-list-item').each(function (i) {
+           console.log(i)
+
+           console.log($('#xblock-id'+(i+1)).val());
+           console.log($('#xblock-type'+(i+1)).val());
+
+           var xblockID = $('#xblock-id'+(i+1)).val();
+
+           var xblockType = $('#xblock-type'+(i+1)).val();
+
+           xblockList.push([xblockID, xblockType]);
+        });
+
+        console.log(xblockList)
         for (var i in fields) {
             var field = fields[i];
             if (field.isSet()) {
@@ -183,6 +232,7 @@ function StudioEditableXBlockMixin(runtime, element) {
                 field.removeEditor();
             }
         }
+        values['xblock_list'] = xblockList;
         studio_submit({values: values, defaults: notSet});
     });
 
