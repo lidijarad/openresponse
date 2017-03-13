@@ -68,9 +68,9 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
 
     def get_blocks(self, xblock_list):
        
-        for compid in xblock_list:
+        for x_id, x_type in xblock_list:
             try:
-                usage_key = self.scope_ids.usage_id.course_key.make_usage_key(self.xblock_type, compid)
+                usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
                 yield self.runtime.get_block(usage_key)
             except:
                 InvalidKeyError
