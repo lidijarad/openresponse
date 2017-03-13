@@ -84,10 +84,9 @@
                 <div id='TextBoxesGroup'>
                     {% for item1, item2 in xblock_list %}
                     <div id="TextBoxDiv{{forloop.counter}}">
-                      <label>Xblock #{{forloop.counter}} :</label> 
                       <div class="xblock-list-item">
                         <input type="text" name="textbox" id="xblock-id{{forloop.counter}}" value="{{item1}}"/>
-                        <input type="text" name="typebox" id="xblock-type{{forloop.counter}}" value="{{item2}}"/>
+                        <input type="text" name="typebox" id="xblock-type{{forloop.counter}}" value="{{item2}}"/>  <button type="button" class="remove">Remove</button>
                       </div>
                     </div>
                     {% endfor %}
