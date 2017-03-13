@@ -150,61 +150,77 @@ function StudioEditableXBlockMixin(runtime, element) {
         
         // Add more XBlocks
 
-        $("#add-btn").click(function () {
-            var newTextBoxDiv = $(document.createElement('div')).attr("id", 'TextBoxDiv' + counter+1);
-            newTextBoxDiv.after().html(
-                
-                '<div class="xblock-list-item"><input type="text"' + '" id="xblock-id' + (counter+1) + '" value="" placeholder="Xblock ID"/>' +
-                '<input type="text"' + '" id="xblock-type' + (counter+1) + '" placeholder="Xblock type" value=""/>' + 
-                '<button type="button" class="remove">Remove</button>'
+        $("#add-btn").on('click', function () {
+            var newTextBoxDiv = $(document.createElement('div')).attr("id", 'TextBoxDiv' + (counter+1));
+            newTextBoxDiv.append(
+                '<div class="xblock-list-item">'+
+                '<input type="text" name="textbox"' + '" id="xblock-id' + (counter+1) + '" value="" />' +
+                '<input type="text" name="typebox"' + '" id="xblock-type' + (counter+1) + '" value=""/>' + 
+                '<button type="button" class="remove" >Remove</button>' +
+                '</div>'
                 );
 
+            newTextBoxDiv.on('click', '.remove', function (e) {
+            // console.log("I am removing this div")
+            // console.log($(this).parent())
+            // $(this).parent().remove();
+                console.log("Removing..")
+                var target = $(e.target);
+                var parent = target.parent();
+                parent.hide("fast", function() {
+                    var grandparent = $(this).parent();
+                    $(this).remove()
+                    grandparent.remove();
+                });   
+            });
             newTextBoxDiv.appendTo("#TextBoxesGroup");
+
             counter++;
         });
 
-
         // Remove XBlocks
 
-        $(".remove").click(function () {
-            
-            console.log('I want to remove this');
-            var removeID = $(this).data('id');
-            $(this).parent().remove();
-        });
+       
 
 
     });
 
-    // var xblockID = $('#xblock-id'+(i+1)).val();
-    // var xblockType = $('#xblock-type'+(i+1)).val();
-    // xblockList.push([xblockID, xblockType]);
+
+    $(".remove").on('click', function (e) {
+            // console.log("I am removing this div")
+            // console.log($(this).parent())
+            // $(this).parent().remove();
+        console.log("Removing..")
+        
+        var target = $(e.target);
+        var parent = target.parent();
+
+        parent.hide("fast", function() {
+            var grandparent = $(this).parent();
+            $(this).remove()
+            grandparent.remove();
+        });
+        
+    });
 
     $('.save-button', element).bind('click', function(e) {
         e.preventDefault();
         var values = {};
         var notSet = []; // List of field names that should be set to default values
-
         var xblockList = [];
 
         $(element).find('.xblock-list-item').each(function (i) {
-            
             var xblockID, xblockType;
-
             $(this).find('input').each(function(index, value) {
-                
-                
+            
                 if (index == 0) {
                     xblockID = $(this).val();
                 }
                 else if (index == 1) {
                     xblockType = $(this).val();
-                }
-                 
+                }    
             })
-
-             xblockList.push([xblockID, xblockType])
-          
+             xblockList.push([xblockID, xblockType]) 
         });
 
         for (var i in fields) {
