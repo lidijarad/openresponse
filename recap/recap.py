@@ -122,7 +122,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     block, xblock_type = self.get_block(self.xblock_list[x])
                     question, answer = self.get_field_names(xblock_type)
                     subblocks.append((getattr(block, question), getattr(block, answer)))
-                    current++
+                    current += 1
             qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
             layout = layout[0:m.start(0)] + qa_str + layout[m.end(0)+1]
 
