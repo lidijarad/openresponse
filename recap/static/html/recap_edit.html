@@ -79,14 +79,15 @@
                 </ul>
               </div>
             {% elif field.type == 'generic' or field.type == 'list' or field.type == 'set' %}
-              {# Show a textarea so we can edit it as a JSON string #}
               <div>
                 <div id='TextBoxesGroup'>
                     {% for item1, item2 in xblock_list %}
                     <div id="TextBoxDiv{{forloop.counter}}">
                       <div class="xblock-list-item">
-                        <input type="text" name="textbox" id="xblock-id{{forloop.counter}}" value="{{item1}}"/>
-                        <input type="text" name="typebox" id="xblock-type{{forloop.counter}}" value="{{item2}}"/>
+                        <input type="text" id="xblock-id{{forloop.counter}}" value="{{item1}}"/>
+                        <select id="xblock-type{{forloop.counter}}">
+                          <option value="freetextresponse"{% if item2 == "freetextresponse" %} selected="selected"{% endif %}>Free Text Response</option>
+                        </select>
                         <button type="button" class="remove" style="padding: 8px 10px;">-</button>
                       </div>
                     </div>
@@ -97,9 +98,8 @@
             {% else %}
               Unsupported field type. This setting cannot be edited.
             {% endif %}
-
             {% if field.allow_reset %}
-              <button class="action setting-clear {% if field.is_set %}active{%else%}inactive{% endif %}" type="button" name="setting-clear" value="Clear" data-tooltip="Clear}">
+              <button class="action setting-clear {% if field.is_set %}active{%else%}inactive{% endif %}" type="button" name="setting-clear" value="Clear" data-tooltip="Clear">
                 <i class="icon fa fa-undo"></i><span class="sr">Clear Value</span>
               </button>
             {% endif %}

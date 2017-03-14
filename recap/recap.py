@@ -1,5 +1,6 @@
 """TO-DO: Write a description of what this XBlock is."""
 
+import re
 import pkg_resources
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String, Float, List, Boolean
@@ -33,6 +34,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     xblock_list = List(
         display_name="Problems",
         help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
+        allow_reset=false,
         scope=Scope.settings
     )
 
@@ -52,7 +54,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         scope=Scope.settings,
     )
 
-    editable_fields = ('display_name', 'string_html', 'xblock_list', 'allow_download',)
+    editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download',)
 
 
     def resource_string(self, path):
@@ -61,8 +63,15 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         return data.decode("utf8")
 
 
-    def get_blocks(self, xblock_list):
+    def get_block(self, xblock):
+        try:
+            usage_key = self.scope_ids.usage_id.course_key.make_usage_key(xblock[1], xblock[0])
+            return self.runtime.get_block(usage_key), xblock[1]
+        except:
+            InvalidKeyError
 
+
+    def get_blocks(self, xblock_list):
         for x_id, x_type in xblock_list:
             try:
                 usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
@@ -99,12 +108,27 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
-        layout = '<p class="recap_question">{}</p><p class="recap_answer"><em>{}</em></p>'
-        qa_str = ''.join(layout.format(q, (a or "Nothing to recap.")) for q, a in blocks)
+        block_layout = '<p class="recap_question">{}</p><p class="recap_answer"><em>{}</em></p>'
+        qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in blocks)
+
+        layout = self.string_html.replace('[[CONTENT]]', qa_str)
+
+        current = 0
+        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
+        for m in re.finditer(pattern, layout):
+            subblocks = []
+            for x in range(current, current+int(m.group(1))):
+                if len(self.xblock_list) > x:
+                    block, xblock_type = self.get_block(self.xblock_list[x])
+                    question, answer = self.get_field_names(xblock_type)
+                    subblocks.append((getattr(block, question), getattr(block, answer)))
+                    current++
+            qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
+            layout = layout[0:m.start(0)] + qa_str + layout[m.end(0)+1]
 
         context = {
             'blocks': blocks,
-            'layout': self.string_html.replace('[[CONTENT]]', qa_str),
+            'layout': layout,
             'download': self.allow_download,
         }
 
