@@ -1,6 +1,7 @@
 """TO-DO: Write a description of what this XBlock is."""
 
 import re
+import logging
 import pkg_resources
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String, Float, List, Boolean
@@ -13,8 +14,8 @@ from opaque_keys.edx.locations import BlockUsageLocator
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 
+logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
-
 
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     """
@@ -119,7 +120,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
-                    block, xblock_type = self.get_block(self.xblock_list[0])
+                    logger.info(u'XBLOCK LIST `{}`: "{}"'.format(x, str(self.xblock_list)))
+                    block, xblock_type = self.get_block(self.xblock_list[x])
                     question, answer = self.get_field_names(xblock_type)
                     subblocks.append((getattr(block, question), getattr(block, answer)))
                     current += 1
