@@ -11,7 +11,7 @@ from xmodule.modulestore.split_mongo import BlockKey
 from opaque_keys.edx.locations import BlockUsageLocator
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
-_ = lambda text: text
+
 loader = ResourceLoader(__name__)
 
 
@@ -27,32 +27,29 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         display_name="Display Name",
         help="This name appears in the horizontal navigation at the top of the page.",
         scope=Scope.settings,
-        default="Aggregate XBlock"
+        default="Recap XBlock"
     )
 
     xblock_type = String(
-	display_name='XBlock type',
-	default = 'freetextresponse',
-	scope=Scope.settings
+    	display_name='XBlock type',
+    	default = 'freetextresponse',
+    	scope=Scope.settings
     )
-
 
     xblock_list = List(
-	help='''Add the component ID's of the XBlocks you wish to include in the summary. 
-             Make sure your ID's are wrapped in double quote marks and are separated by a comma.
-             Eg:["ffd9bcbd65ac454e9c5c0aae26edb5db", "6899073dca1e4d9b83d54a846f141031"]''',
-	default=[['12232413542', 'freetextresponse']],
-	scope=Scope.settings
-    )	
-    
-    string_html = String(
-	help="Include some HTML formatting (introductory paragraphs or headings) that you would like to"
-	     " accompany the summary of questions and answers.",
-	multiline_editor='html',
-	default="<p>CONTENT</p>",
-	scope=Scope.settings
+    	help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
+    	default=[['12232413542', 'freetextresponse']],
+    	scope=Scope.settings
     )
-  
+
+    string_html = String(
+    	help="Include some HTML formatting (introductory paragraphs or headings) that you "
+    	     "would like to accompany the summary of questions and answers.",
+    	multiline_editor='html',
+    	default="<p>CONTENT</p>",
+    	scope=Scope.settings
+    )
+
     allow_pdf = Boolean(
     	help="Allow the user to download a pdf summary",
     	default=True,
@@ -61,13 +58,14 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
     editable_fields = ('display_name', 'string_html', 'xblock_list', 'allow_pdf',)
 
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
     def get_blocks(self, xblock_list):
-       
+
         for x_id, x_type in xblock_list:
             try:
                 usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
@@ -106,7 +104,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 		The primary view of the RecapXBlock, shown to students
 		when viewing courses.
 		"""
-	        
+
 		question, answer = self.get_field_names(self.xblock_type)
 		blocks = []
 
@@ -143,7 +141,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Render a form for editing this XBlock
         """
         fragment = Fragment()
-        context = {'fields': [], 
+        context = {'fields': [],
         			'xblock_list': self.xblock_list,
         		  }
         # Build a list of all the fields that can be edited:
