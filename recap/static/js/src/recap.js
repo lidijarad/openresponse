@@ -12,10 +12,9 @@ function RecapXBlock(runtime, element) {
 					}
 				};
 
-				// All units are in the set measurement for the document
-				// This can be changed to "pt" (points), "mm" (Default), "cm", "in"
-				doc.fromHTML($('#recap_answers').get(0), 15, 15, {
-					'elementHandlers': specialElementHandlers
+				doc.fromHTML($('#recap_answers').get(0), 20, 20, {
+					'elementHandlers': specialElementHandlers,
+					'width': 7.5
 				});
 
 				doc.save('summary.pdf')
