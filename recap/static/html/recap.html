@@ -1,19 +1,12 @@
 <div class="recap" id="content">
-
-	<div id="answers">
+	<div id="recap_answers">
 		{% autoescape off %}
  			{{ layout }}
 		{% endautoescape %}
 	</div>
-
-	{% if pdf and len(blocks) > 0 %}
-		<div id="editor"></div>
+	{% if pdf and blocks|length > 0 %}
+		<div id="recap_editor"></div>
 		<button id="cmd">Generate PDF</button>
 	{% endif %}
-
-	{% if not pdf %}
-		<p></p>
-	{% endif %}
-
 </div>
 
