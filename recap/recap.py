@@ -34,7 +34,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     xblock_list = List(
         display_name="Problems",
         help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
-        allow_reset=false,
+        allow_reset=False,
         scope=Scope.settings
     )
 
