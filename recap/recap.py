@@ -116,7 +116,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         current = 0
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-        for m in sorted(re.finditer(pattern, layout), key=attrgetter('group'), reverse=True):
+        for m in sorted(re.finditer(pattern, layout), key=lambda m:int(m.start(0)), reverse=True):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
