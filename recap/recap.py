@@ -125,7 +125,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     subblocks.append((getattr(block, question), getattr(block, answer)))
                     current += 1
             qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
-            layout = layout[0:m.start(0)] + qa_str + layout[m.end(0)]
+            layout = layout[0:m.start(0)] + qa_str + layout[m.end(0)-1]
 
         context = {
             'blocks': blocks,
