@@ -105,6 +105,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
         blocks = []
+        logger.info(u'XBLOCK LIST "{}"'.format(str(self.xblock_list)))
         for block, xblock_type in self.get_blocks(self.xblock_list):
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
@@ -120,7 +121,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
-                    logger.info(u'XBLOCK LIST `{}`: "{}"'.format(x, str(self.xblock_list)))
+                    logger.info(u'XBLOCK LIST `{}`: "{}"'.format(x, str(self.xblock_list[x])))
                     block, xblock_type = self.get_block(self.xblock_list[x])
                     question, answer = self.get_field_names(xblock_type)
                     subblocks.append((getattr(block, question), getattr(block, answer)))
