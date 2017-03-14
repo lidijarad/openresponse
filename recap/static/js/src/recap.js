@@ -12,9 +12,9 @@ function RecapXBlock(runtime, element) {
 					}
 				};
 
-				doc.fromHTML($('#recap_answers').get(0), 20, 20, {
+				doc.fromHTML($('#recap_answers').get(0), 30, 20, {
 					'elementHandlers': specialElementHandlers,
-					'width': 500
+					'width': 550
 				});
 
 				doc.save('summary.pdf')
