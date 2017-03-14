@@ -95,7 +95,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Returns the correct question and answer field names for a specific XBlock type
         """
         if xblock_type == 'freetextresponse':
-            return "prompt", "student_answer"
+            return "display_name", "student_answer"
         else:
             raise Exception('The XBlock type selected does not exist.')
 
