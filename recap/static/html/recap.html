@@ -4,12 +4,11 @@
 		{% autoescape off %}
  			{{ layout }}
 		{% endautoescape %}
-
 	</div>
 
-	{% if pdf %}
+	{% if pdf and len(blocks) > 0 %}
 		<div id="editor"></div>
-		<button id="cmd">generate PDF</button>
+		<button id="cmd">Generate PDF</button>
 	{% endif %}
 
 	{% if not pdf %}

@@ -1,7 +1,7 @@
 /* Javascript for StudioEditableXBlockMixin. */
 function StudioEditableXBlockMixin(runtime, element) {
     "use strict";
-    
+
     var fields = [];
     var tinyMceAvailable = (typeof $.fn.tinymce !== 'undefined'); // Studio includes a copy of tinyMCE and its jQuery plugin
     var datepickerAvailable = (typeof $.fn.datepicker !== 'undefined'); // Studio includes datepicker jQuery plugin
@@ -138,8 +138,8 @@ function StudioEditableXBlockMixin(runtime, element) {
         });
     };
 
-    
-    
+
+
     $(function ($) {
 
         // Count all the number of items in the Xblock list
@@ -147,7 +147,7 @@ function StudioEditableXBlockMixin(runtime, element) {
         $(element).find('.xblock-list-item').each(function (i) {
            counter++;
         });
-        
+
         // Add more XBlocks
 
         $("#add-btn").on('click', function () {
@@ -155,10 +155,10 @@ function StudioEditableXBlockMixin(runtime, element) {
             newTextBoxDiv.append(
                 '<div class="xblock-list-item">'+
                 '<input type="text" name="textbox"' + '" id="xblock-id' + (counter+1) + '" value="" />' +
-                '<input type="text" name="typebox"' + '" id="xblock-type' + (counter+1) + '" value=""/>' + 
-                '<button type="button" class="remove" >Remove</button>' +
+                '<input type="text" name="typebox"' + '" id="xblock-type' + (counter+1) + '" value=""/>' +
+                '<button type="button" class="remove" style="padding: 8px 10px;">-</button>' +
                 '</div>'
-                );
+            );
 
             newTextBoxDiv.on('click', '.remove', function (e) {
 
@@ -169,7 +169,7 @@ function StudioEditableXBlockMixin(runtime, element) {
                     var grandparent = $(this).parent();
                     $(this).remove()
                     grandparent.remove();
-                });   
+                });
             });
             newTextBoxDiv.appendTo("#TextBoxesGroup");
             counter++;
@@ -187,7 +187,7 @@ function StudioEditableXBlockMixin(runtime, element) {
             $(this).remove()
             grandparent.remove();
         });
-        
+
     });
 
     $('.save-button', element).bind('click', function(e) {
@@ -199,15 +199,15 @@ function StudioEditableXBlockMixin(runtime, element) {
         $(element).find('.xblock-list-item').each(function (i) { //Add XBlock-list to fields array
             var xblockID, xblockType;
             $(this).find('input').each(function(index, value) {
-            
+
                 if (index == 0) {
                     xblockID = $(this).val();
                 }
                 else if (index == 1) {
                     xblockType = $(this).val();
-                }    
+                }
             })
-             xblockList.push([xblockID, xblockType]) 
+             xblockList.push([xblockID, xblockType])
         });
 
         for (var i in fields) {

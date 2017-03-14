@@ -33,7 +33,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     xblock_list = List(
         display_name="Problems",
         help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
-        default=[['1234567890', 'freetextresponse']],
         scope=Scope.settings
     )
 
@@ -42,7 +41,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         help="Include some HTML formatting (introductory paragraphs or headings) that you "
              "would like to accompany the summary of questions and answers.",
         multiline_editor='html',
-        default="<div>!!CONTENT</div>",
+        default="<div>[[CONTENT]]</div>",
         scope=Scope.settings
     )
 
@@ -103,7 +102,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         context = {
             'blocks': blocks,
-            'layout': self.string_html.replace('!!CONTENT', qa_str),
+            'layout': self.string_html.replace('[[CONTENT]]', qa_str),
             'pdf': self.allow_pdf,
         }
 
