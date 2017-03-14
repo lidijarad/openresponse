@@ -161,9 +161,7 @@ function StudioEditableXBlockMixin(runtime, element) {
                 );
 
             newTextBoxDiv.on('click', '.remove', function (e) {
-            // console.log("I am removing this div")
-            // console.log($(this).parent())
-            // $(this).parent().remove();
+
                 console.log("Removing..")
                 var target = $(e.target);
                 var parent = target.parent();
@@ -174,24 +172,13 @@ function StudioEditableXBlockMixin(runtime, element) {
                 });   
             });
             newTextBoxDiv.appendTo("#TextBoxesGroup");
-
             counter++;
         });
-
-        // Remove XBlocks
-
-       
-
-
     });
 
 
     $(".remove").on('click', function (e) {
-            // console.log("I am removing this div")
-            // console.log($(this).parent())
-            // $(this).parent().remove();
-        console.log("Removing..")
-        
+
         var target = $(e.target);
         var parent = target.parent();
 
@@ -209,7 +196,7 @@ function StudioEditableXBlockMixin(runtime, element) {
         var notSet = []; // List of field names that should be set to default values
         var xblockList = [];
 
-        $(element).find('.xblock-list-item').each(function (i) {
+        $(element).find('.xblock-list-item').each(function (i) { //Add XBlock-list to fields array
             var xblockID, xblockType;
             $(this).find('input').each(function(index, value) {
             
@@ -236,7 +223,7 @@ function StudioEditableXBlockMixin(runtime, element) {
                 field.removeEditor();
             }
         }
-        values['xblock_list'] = xblockList;
+        values['xblock_list'] = xblockList; //Add XBlock-list to fields array
         studio_submit({values: values, defaults: notSet});
     });
 

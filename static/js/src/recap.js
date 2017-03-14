@@ -1,5 +1,5 @@
-/* Javascript for OpenResponseXBlock. */
-function OpenResponseXBlock(runtime, element) {
+/* Javascript for RecapXBlock. */
+function RecapXBlock(runtime, element) {
 	$(function ($) {
 
  		$('#cmd').click(function () {

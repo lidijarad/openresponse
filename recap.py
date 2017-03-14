@@ -15,7 +15,7 @@ _ = lambda text: text
 loader = ResourceLoader(__name__)
 
 
-class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
+class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     """
     TO-DO: document what your XBlock does.
     """
@@ -103,7 +103,7 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
 
     def student_view(self, context=None):
 		"""
-		The primary view of the OpenResponseXBlock, shown to students
+		The primary view of the RecapXBlock, shown to students
 		when viewing courses.
 		"""
 	        
@@ -125,17 +125,17 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
         	'pdf': self.allow_pdf,
 		}
 
-		html = loader.render_django_template("static/html/openresponse.html", context)
+		html = loader.render_django_template("static/html/recap.html", context)
 		frag = Fragment(html.format(self=self))
-		frag.add_css(self.resource_string("static/css/openresponse.css"))
+		frag.add_css(self.resource_string("static/css/recap.css"))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js-master/FileSaver.js'))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.js'))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/from_html.js'))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/split_text_to_size.js'))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/standard_fonts_metrics.js'))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/libs/html2canvas/dist/html2canvas.js'))
-		frag.add_javascript(self.resource_string("static/js/src/openresponse.js"))
-		frag.initialize_js('OpenResponseXBlock')
+		frag.add_javascript(self.resource_string("static/js/src/recap.js"))
+		frag.initialize_js('RecapXBlock')
 		return frag
 
     def studio_view(self, context):
@@ -157,8 +157,8 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
             field_info = self._make_field_info(field_name, field)
             if field_info is not None:
                 context["fields"].append(field_info)
-        fragment.content = loader.render_django_template("static/html/openresponse_edit.html", context)
-        fragment.add_javascript(loader.load_unicode("static/js/src/openresponse_edit.js"))
+        fragment.content = loader.render_django_template("static/html/recap_edit.html", context)
+        fragment.add_javascript(loader.load_unicode("static/js/src/recap_edit.js"))
         fragment.initialize_js('StudioEditableXBlockMixin')
         return fragment
 
@@ -168,14 +168,14 @@ class OpenResponseXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMi
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
         return [
-            ("OpenResponseXBlock",
-             """<openresponse/>
+            ("RecapXBlock",
+             """<recap/>
              """),
-            ("Multiple OpenResponseXBlock",
+            ("Multiple RecapXBlock",
              """<vertical_demo>
-                <openresponse/>
-                <openresponse/>
-                <openresponse/>
+                <recap/>
+                <recap/>
+                <recap/>
                 </vertical_demo>
              """),
         ]

@@ -1,1 +1,1 @@
-from .openresponse import OpenResponseXBlock
+from .recap import RecapXBlock

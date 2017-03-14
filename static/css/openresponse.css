@@ -1,9 +1,9 @@
-/* CSS for OpenResponseXBlock */
+/* CSS for RecapXBlock */
 
-.openresponse_block .count {
+.recap_block .count {
     font-weight: bold;
 }
 
-.openresponse_block p {
+.recap_block p {
     cursor: pointer;
 }
