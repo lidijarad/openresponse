@@ -129,7 +129,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
             block_sets.append((m.start(0), m.end(0), qa_str)
 
-        for block_set in reversed(block_sets):
+        for block_set in block_sets.reverse():
             start, end, string = block_set;
             layout = layout[0:start] + string + layout[end:]
 
