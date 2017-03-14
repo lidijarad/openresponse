@@ -75,44 +75,6 @@ function StudioEditableXBlockMixin(runtime, element) {
         }
     });
 
-    $(element).find('.wrapper-list-settings .list-set').each(function() {
-        var $optionList = $(this);
-        var $checkboxes = $(this).find('input');
-        var $wrapper = $optionList.closest('li');
-        var $resetButton = $wrapper.find('button.setting-clear');
-
-        fields.push({
-            name: $wrapper.data('field-name'),
-            isSet: function() { return $wrapper.hasClass('is-set'); },
-            hasEditor: function() { return false; },
-            val: function() {
-                var val = [];
-                $checkboxes.each(function() {
-                    if ($(this).is(':checked')) {
-                        val.push(JSON.parse($(this).val()));
-                    }
-                });
-                return val;
-            }
-        });
-        var fieldChanged = function() {
-            // Field value has been modified:
-            $wrapper.addClass('is-set');
-            $resetButton.removeClass('inactive').addClass('active');
-        };
-        $checkboxes.bind("change input", fieldChanged);
-
-        $resetButton.click(function() {
-            var defaults = JSON.parse($wrapper.attr('data-default'));
-            $checkboxes.each(function() {
-                var val = JSON.parse($(this).val());
-                $(this).prop('checked', defaults.indexOf(val) > -1);
-            });
-            $wrapper.removeClass('is-set');
-            $resetButton.removeClass('active').addClass('inactive');
-        });
-    });
-
     var studio_submit = function(data) {
         var handlerUrl = runtime.handlerUrl(element, 'submit_studio_edits');
         runtime.notify('save', {state: 'start', message: gettext("Saving")});
@@ -138,8 +100,6 @@ function StudioEditableXBlockMixin(runtime, element) {
         });
     };
 
-
-
     $(function ($) {
 
         // Count all the number of items in the Xblock list
@@ -154,8 +114,10 @@ function StudioEditableXBlockMixin(runtime, element) {
             var newTextBoxDiv = $(document.createElement('div')).attr("id", 'TextBoxDiv' + (counter+1));
             newTextBoxDiv.append(
                 '<div class="xblock-list-item">'+
-                '<input type="text" name="textbox"' + '" id="xblock-id' + (counter+1) + '" value="" />' +
-                '<input type="text" name="typebox"' + '" id="xblock-type' + (counter+1) + '" value=""/>' +
+                '<input type="text"' + '" id="xblock-id' + (counter+1) + '" value="" />' +
+                '<select id="xblock-type{{forloop.counter}}"' + '" id="xblock-type' + (counter+1) + '">' +
+                    '<option value="freetextresponse">Free Text Response</option>' +
+                '</select>' +
                 '<button type="button" class="remove" style="padding: 8px 10px;">-</button>' +
                 '</div>'
             );
@@ -198,8 +160,7 @@ function StudioEditableXBlockMixin(runtime, element) {
 
         $(element).find('.xblock-list-item').each(function (i) { //Add XBlock-list to fields array
             var xblockID, xblockType;
-            $(this).find('input').each(function(index, value) {
-
+            $(this).find('input,select').each(function(index, value) {
                 if (index == 0) {
                     xblockID = $(this).val();
                 }
