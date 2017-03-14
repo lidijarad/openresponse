@@ -44,7 +44,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         help="Include some HTML formatting (introductory paragraphs or headings) that you "
              "would like to accompany the summary of questions and answers.",
         multiline_editor='html',
-        default="<div>[[CONTENT]]</div>",
+        default="<p>[[CONTENT]]</p>",
         scope=Scope.settings
     )
 
@@ -116,7 +116,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         current = 0
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-        for m in re.finditer(pattern, layout):
+        for m in sorted(re.finditer(pattern, layout), key=attrgetter('group'), reverse=True):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
