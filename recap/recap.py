@@ -114,19 +114,18 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
-        # current = 0
-        # pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-        # for m in re.finditer(pattern, layout):
-        #     subblocks = []
-        #     for x in range(current, current+int(m.group(1))):
-        #         if len(self.xblock_list) > x:
-        #             logger.info(u'XBLOCK `{}`: "{}"'.format(x, str(self.xblock_list[x])))
-        #             block, xblock_type = self.get_block(self.xblock_list[x])
-        #             question, answer = self.get_field_names(xblock_type)
-        #             subblocks.append((getattr(block, question), getattr(block, answer)))
-        #             current += 1
-        #     qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
-        #     layout = layout[0:m.start(0)] + qa_str + layout[m.end(0)+1]
+        current = 0
+        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
+        for m in re.finditer(pattern, layout):
+            subblocks = []
+            for x in range(current, current+int(m.group(1))):
+                if len(self.xblock_list) > x:
+                    block, xblock_type = self.get_block(self.xblock_list[x])
+                    question, answer = self.get_field_names(xblock_type)
+                    subblocks.append((getattr(block, question), getattr(block, answer)))
+                    current += 1
+            qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
+            layout = layout[0:m.start(0)] + qa_str + layout[m.end(0)+1]
 
         context = {
             'blocks': blocks,
