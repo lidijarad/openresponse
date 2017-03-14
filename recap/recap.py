@@ -31,23 +31,23 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     )
 
     xblock_list = List(
-    	help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
-    	default=[['12232413542', 'freetextresponse']],
-    	scope=Scope.settings
+        help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
+        default=[['12232413542', 'freetextresponse']],
+        scope=Scope.settings
     )
 
     string_html = String(
-    	help="Include some HTML formatting (introductory paragraphs or headings) that you "
-    	     "would like to accompany the summary of questions and answers.",
-    	multiline_editor='html',
-    	default="<p>CONTENT</p>",
-    	scope=Scope.settings
+        help="Include some HTML formatting (introductory paragraphs or headings) that you "
+             "would like to accompany the summary of questions and answers.",
+        multiline_editor='html',
+        default="<p>CONTENT</p>",
+        scope=Scope.settings
     )
 
     allow_pdf = Boolean(
-    	help="Allow the user to download a pdf summary",
-    	default=True,
-    	scope=Scope.settings,
+        help="Allow the user to download a pdf summary",
+        default=True,
+        scope=Scope.settings,
     )
 
     editable_fields = ('display_name', 'string_html', 'xblock_list', 'allow_pdf',)
@@ -71,11 +71,11 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
     @XBlock.json_handler
     def get_xblocks_async(self, data, suffix=''):
-    	"""
-    	Called when submitting the form in studio to get the xblock question and answer
-    	"""
-    	self.xblock_list = data['xblock_list']
-    	return { 'xblock_list': self.xblock_list}
+        """
+        Called when submitting the form in studio to get the xblock question and answer
+        """
+        self.xblock_list = data['xblock_list']
+        return { 'xblock_list': self.xblock_list}
 
 
     def get_field_names(self, xblock_type):
@@ -89,34 +89,34 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
     def student_view(self, context=None):
-		"""
-		The primary view of the RecapXBlock, shown to students when viewing courses.
-		"""
-		blocks = []
-		for block in self.get_blocks(self.xblock_list):
+        """
+        The primary view of the RecapXBlock, shown to students when viewing courses.
+        """
+        blocks = []
+        for block in self.get_blocks(self.xblock_list):
             xblock_type = block[1]
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
-		qa_str = ''.join('<p>{}</p><p>{}</p>'.format(q, a) for q, a in blocks)
+        qa_str = ''.join('<p>{}</p><p>{}</p>'.format(q, a) for q, a in blocks)
 
-		context = {
-        	'blocks': blocks,
-        	'layout': self.string_html.replace('<p>CONTENT</p>', qa_str),
-        	'pdf': self.allow_pdf,
-		}
+        context = {
+            'blocks': blocks,
+            'layout': self.string_html.replace('<p>CONTENT</p>', qa_str),
+            'pdf': self.allow_pdf,
+        }
 
-		frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))
-		frag.add_css(self.resource_string("static/css/recap.css"))
-		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js-master/FileSaver.js'))
-		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.js'))
-		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/from_html.js'))
-		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/split_text_to_size.js'))
-		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/standard_fonts_metrics.js'))
-		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/libs/html2canvas/dist/html2canvas.js'))
-		frag.add_javascript(self.resource_string("static/js/src/recap.js"))
-		frag.initialize_js('RecapXBlock')
-		return frag
+        frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))
+        frag.add_css(self.resource_string("static/css/recap.css"))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js-master/FileSaver.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/from_html.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/split_text_to_size.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/standard_fonts_metrics.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/libs/html2canvas/dist/html2canvas.js'))
+        frag.add_javascript(self.resource_string("static/js/src/recap.js"))
+        frag.initialize_js('RecapXBlock')
+        return frag
 
 
     def studio_view(self, context):
@@ -125,8 +125,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         frag = Fragment()
         context = {'fields': [],
-        			'xblock_list': self.xblock_list,
-        		  }
+                    'xblock_list': self.xblock_list,
+                  }
         # Build a list of all the fields that can be edited:
         for field_name in self.editable_fields:
             field = self.fields[field_name]
