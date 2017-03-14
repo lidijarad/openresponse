@@ -105,8 +105,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
         blocks = []
-        logger.info(u'XBLOCK LIST "{}"'.format(str(self.xblock_list)))
         for block, xblock_type in self.get_blocks(self.xblock_list):
+            logger.info(u'XBLOCK LIST `{}`: "{}"'.format(block, xblock_type))
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
