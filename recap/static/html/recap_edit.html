@@ -55,7 +55,7 @@
               <textarea class="field-data-control" data-field-name="{{field.name}}" id="xb-field-edit-{{field.name}}" rows=10 cols=70>{{field.value}}</textarea>
             {% elif field.type == 'set' and field.has_list_values %}
               {% comment %}
-                TODO: If len(list_values) is high, show an alternate editor 
+                TODO: If len(list_values) is high, show an alternate editor
                 with a select box and a growing list of selected choices
               {% endcomment %}
               <div class="wrapper-list-settings">
@@ -86,13 +86,14 @@
                     <div id="TextBoxDiv{{forloop.counter}}">
                       <div class="xblock-list-item">
                         <input type="text" name="textbox" id="xblock-id{{forloop.counter}}" value="{{item1}}"/>
-                        <input type="text" name="typebox" id="xblock-type{{forloop.counter}}" value="{{item2}}"/>  <button type="button" class="remove">Remove</button>
+                        <input type="text" name="typebox" id="xblock-type{{forloop.counter}}" value="{{item2}}"/>
+                        <button type="button" class="remove" style="padding: 8px 10px;">-</button>
                       </div>
                     </div>
                     {% endfor %}
                 </div>
-                <button type="button" class="add" id="add-btn">Remove XBlock</button>
-              </div>       
+                <button type="button" class="add" id="add-btn" style="margin-top: 10px;">+ Add Problem</button>
+              </div>
             {% else %}
               Unsupported field type. This setting cannot be edited.
             {% endif %}

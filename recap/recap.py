@@ -31,16 +31,18 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     )
 
     xblock_list = List(
+        display_name="Problems",
         help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
-        default=[['12232413542', 'freetextresponse']],
+        default=[['1234567890', 'freetextresponse']],
         scope=Scope.settings
     )
 
     string_html = String(
+        display_name="Layout",
         help="Include some HTML formatting (introductory paragraphs or headings) that you "
              "would like to accompany the summary of questions and answers.",
         multiline_editor='html',
-        default="<p>CONTENT</p>",
+        default="<div>!!CONTENT</div>",
         scope=Scope.settings
     )
 
@@ -64,7 +66,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for x_id, x_type in xblock_list:
             try:
                 usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
-                yield self.runtime.get_block(usage_key)
+                yield self.runtime.get_block(usage_key), x_type
             except:
                 InvalidKeyError
 
@@ -93,8 +95,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
         blocks = []
-        for block in self.get_blocks(self.xblock_list):
-            xblock_type = block[1]
+        for block, xblock_type in self.get_blocks(self.xblock_list):
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
@@ -102,7 +103,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         context = {
             'blocks': blocks,
-            'layout': self.string_html.replace('<p>CONTENT</p>', qa_str),
+            'layout': self.string_html.replace('!!CONTENT', qa_str),
             'pdf': self.allow_pdf,
         }
 
