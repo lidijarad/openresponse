@@ -5,8 +5,10 @@
 		{% endautoescape %}
 	</div>
 	{% if download and blocks|length > 0 %}
+  <div class="recap_actions" style="margin-top: 20px">
 		<div id="recap_editor"></div>
-		<button id="cmd">Generate PDF</button>
+		<button class="btn" id="cmd">Generate PDF</button>
+  </div>
 	{% endif %}
 </div>
 

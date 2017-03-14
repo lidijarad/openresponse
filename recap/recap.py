@@ -99,7 +99,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
-        qa_str = ''.join('<p>{}</p><p><em>{}</em></p>'.format(q, (a or "Nothing to recap.")) for q, a in blocks)
+        layout = '<p class="recap_question">{}</p><p class="recap_answer"><em>{}</em></p>'
+        qa_str = ''.join(layout.format(q, (a or "Nothing to recap.")) for q, a in blocks)
 
         context = {
             'blocks': blocks,
