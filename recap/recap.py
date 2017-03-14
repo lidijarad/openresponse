@@ -110,12 +110,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))
         frag.add_css(self.resource_string("static/css/recap.css"))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js-master/FileSaver.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/from_html.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/split_text_to_size.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/plugins/standard_fonts_metrics.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/libs/html2canvas/dist/html2canvas.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
+        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
         frag.initialize_js('RecapXBlock')
         return frag
