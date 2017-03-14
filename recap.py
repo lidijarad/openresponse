@@ -79,7 +79,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
     def get_field_names(self, xblock_type):
-
+        """
+        Returns the correct question and answer field names for a specific XBlock type
+        """
         if xblock_type == 'freetextresponse':
             return "prompt", "student_answer"
         else:
