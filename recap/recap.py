@@ -86,7 +86,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Called when submitting the form in studio to get the xblock question and answer
         """
         self.xblock_list = data['xblock_list']
-        return { 'xblock_list': self.xblock_list}
+        return { 'xblock_list': self.xblock_list }
 
 
     def get_field_names(self, xblock_type):
@@ -119,6 +119,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
+                    print(x, str(self.xblock_list[x]), str(self.xblock_list))
                     block, xblock_type = self.get_block(self.xblock_list[x])
                     question, answer = self.get_field_names(xblock_type)
                     subblocks.append((getattr(block, question), getattr(block, answer)))
