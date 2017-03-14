@@ -106,7 +106,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         blocks = []
         for block, xblock_type in self.get_blocks(self.xblock_list):
-            logger.info(u'WTF `{}`: "{}"'.format(block, xblock_type))
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
