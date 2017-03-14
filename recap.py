@@ -30,12 +30,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         default="Recap XBlock"
     )
 
-    xblock_type = String(
-    	display_name='XBlock type',
-    	default = 'freetextresponse',
-    	scope=Scope.settings
-    )
-
     xblock_list = List(
     	help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
     	default=[['12232413542', 'freetextresponse']],
@@ -64,6 +58,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
+
     def get_blocks(self, xblock_list):
 
         for x_id, x_type in xblock_list:
@@ -73,58 +68,41 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             except:
                 InvalidKeyError
 
+
     @XBlock.json_handler
     def get_xblocks_async(self, data, suffix=''):
     	"""
     	Called when submitting the form in studio to get the xblock question and answer
-
     	"""
     	self.xblock_list = data['xblock_list']
     	return { 'xblock_list': self.xblock_list}
 
-    def get_freetextresponse_field_names(self):
-
-        question_field_name = "prompt"
-        answer_field_name = "student_answer"
-
-        return question_field_name, answer_field_name
 
     def get_field_names(self, xblock_type):
 
         if xblock_type == 'freetextresponse':
-
-            answer, question = self.get_freetextresponse_field_names()
-            return answer, question
+            return "prompt", "student_answer"
         else:
             raise Exception('The xblock_type field names do not exist. Add function to handle your specific XBlock.')
 
 
     def student_view(self, context=None):
 		"""
-		The primary view of the RecapXBlock, shown to students
-		when viewing courses.
+		The primary view of the RecapXBlock, shown to students when viewing courses.
 		"""
-
-		question, answer = self.get_field_names(self.xblock_type)
 		blocks = []
-
 		for block in self.get_blocks(self.xblock_list):
 			blocks.append((getattr(block, question), getattr(block, answer)))
 
-		qa_str = ''.join('''<p>{}</p> <br/>
-							<p>{}</p>'''.format(q, a) for q, a in blocks)
-
-		layout = self.string_html
-		layout = layout.replace('<p>CONTENT</p>', qa_str)
+		qa_str = ''.join('<p>{}</p><p>{}</p>'.format(q, a) for q, a in blocks)
 
 		context = {
         	'blocks': blocks,
-        	'layout': layout,
+        	'layout': self.string_html.replace('<p>CONTENT</p>', qa_str),
         	'pdf': self.allow_pdf,
 		}
 
-		html = loader.render_django_template("static/html/recap.html", context)
-		frag = Fragment(html.format(self=self))
+		frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))
 		frag.add_css(self.resource_string("static/css/recap.css"))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js-master/FileSaver.js'))
 		frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.js'))
@@ -136,11 +114,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 		frag.initialize_js('RecapXBlock')
 		return frag
 
+
     def studio_view(self, context):
         """
         Render a form for editing this XBlock
         """
-        fragment = Fragment()
+        frag = Fragment()
         context = {'fields': [],
         			'xblock_list': self.xblock_list,
         		  }
@@ -155,13 +134,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             field_info = self._make_field_info(field_name, field)
             if field_info is not None:
                 context["fields"].append(field_info)
-        fragment.content = loader.render_django_template("static/html/recap_edit.html", context)
-        fragment.add_javascript(loader.load_unicode("static/js/src/recap_edit.js"))
-        fragment.initialize_js('StudioEditableXBlockMixin')
-        return fragment
+        frag.content = loader.render_django_template("static/html/recap_edit.html", context)
+        frag.add_javascript(loader.load_unicode("static/js/src/recap_edit.js"))
+        frag.initialize_js('StudioEditableXBlockMixin')
+        return frag
 
-    # TO-DO: change this to create the scenarios you'd like to see in the
-    # workbench while developing your XBlock.
+
     @staticmethod
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
