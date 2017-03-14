@@ -14,7 +14,7 @@ function RecapXBlock(runtime, element) {
 
 				doc.fromHTML($('#recap_answers').get(0), 20, 20, {
 					'elementHandlers': specialElementHandlers,
-					'width': 7.5
+					'width': 500
 				});
 
 				doc.save('summary.pdf')
