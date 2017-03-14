@@ -94,6 +94,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 		"""
 		blocks = []
 		for block in self.get_blocks(self.xblock_list):
+            xblock_type = block[1]
+            question, answer = self.get_field_names(xblock_type)
 			blocks.append((getattr(block, question), getattr(block, answer)))
 
 		qa_str = ''.join('<p>{}</p><p>{}</p>'.format(q, a) for q, a in blocks)
