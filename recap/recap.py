@@ -45,13 +45,14 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         scope=Scope.settings
     )
 
-    allow_pdf = Boolean(
+    allow_download = Boolean(
+        display_name="Allow Download",
         help="Allow the user to download a pdf summary",
         default=True,
         scope=Scope.settings,
     )
 
-    editable_fields = ('display_name', 'string_html', 'xblock_list', 'allow_pdf',)
+    editable_fields = ('display_name', 'string_html', 'xblock_list', 'allow_download',)
 
 
     def resource_string(self, path):
@@ -103,7 +104,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         context = {
             'blocks': blocks,
             'layout': self.string_html.replace('[[CONTENT]]', qa_str),
-            'pdf': self.allow_pdf,
+            'download': self.allow_download,
         }
 
         frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))
