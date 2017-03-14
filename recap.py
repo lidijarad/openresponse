@@ -83,7 +83,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         if xblock_type == 'freetextresponse':
             return "prompt", "student_answer"
         else:
-            raise Exception('The xblock_type field names do not exist. Add function to handle your specific XBlock.')
+            raise Exception('The XBlock type selected does not exist.')
 
 
     def student_view(self, context=None):
