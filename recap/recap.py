@@ -27,7 +27,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         display_name="Display Name",
         help="This name appears in the horizontal navigation at the top of the page.",
         scope=Scope.settings,
-        default="Recap XBlock"
+        default="Recap"
     )
 
     xblock_list = List(

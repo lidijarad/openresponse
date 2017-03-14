@@ -23,7 +23,7 @@ def package_data(pkg, roots):
 setup(
     name='recap-xblock',
     version='0.1',
-    description='recap XBlock',   # TODO: write a better description.
+    description='Recap XBlock',   # TODO: write a better description.
     license='UNKNOWN',          # TODO: choose a license: 'AGPL v3' and 'Apache 2.0' are popular.
     packages=[
         'recap',
