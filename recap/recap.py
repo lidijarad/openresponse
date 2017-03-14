@@ -119,8 +119,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
-                    print(x, str(self.xblock_list[x]), str(self.xblock_list))
-                    block, xblock_type = self.get_block(self.xblock_list[x])
+                    block, xblock_type = self.get_block(self.xblock_list[0])
                     question, answer = self.get_field_names(xblock_type)
                     subblocks.append((getattr(block, question), getattr(block, answer)))
                     current += 1
