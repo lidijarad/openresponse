@@ -10,9 +10,11 @@ function RecapXBlock(runtime, element) {
 				};
 				doc.fromHTML($('#recap_answers').get(0), 30, 20, {
 					'elementHandlers': specialElementHandlers,
-					'width': 550
+					'width': 550,
+					'pagesplit': true,
+					'margin': 1
 				});
-				doc.save('summary.pdf')
+				doc.save('recap.pdf')
 		});
 	});
 }
