@@ -1,19 +1,16 @@
 /* CSS for RecapXBlock */
 
+.recap_question {
+  /*font-style: italic;*/
+}
+
 .recap_answer {
   padding-left: 10px;
   margin-bottom: 10px;
   border-left: 4px solid #AAA;
+  white-space: pre-wrap;
 }
 
 .recap_actions {
   margin-top: 20px;
-}
-
-.recap_block .count {
-  font-weight: bold;
-}
-
-.recap_block p {
-  cursor: pointer;
 }

@@ -55,7 +55,14 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         scope=Scope.settings,
     )
 
-    editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download',)
+    download_text = String(
+        display_name="Download Button Text",
+        help="Text to display on the download button",
+        default="Download",
+        scope=Scope.settings,
+    )
+
+    editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download', 'download_text',)
 
 
     def resource_string(self, path):
@@ -103,7 +110,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns formatted answer or placeholder string
         """
-        return str(answer).replace('\n','<br />\n') if answer else "Nothing to recap."
+        return re.sub(r'\n+', '<br /><br />', answer) if answer else "Nothing to recap."
 
 
     @XBlock.supports("multi_device")
@@ -116,7 +123,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
-        block_layout = '<p class="recap_question">{}</p><p class="recap_answer"><em>{}</em></p>'
+        block_layout = '<p class="recap_question">{}</p><p class="recap_answer">{}</p>'
         qa_str = ''.join(block_layout.format(q, self.get_answer(a)) for q, a in blocks)
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
@@ -141,7 +148,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         context = {
             'blocks': blocks,
             'layout': layout,
-            'download': self.allow_download,
+            'allow_download': self.allow_download,
+            'download_text': self.download_text,
         }
 
         frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))

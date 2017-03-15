@@ -4,10 +4,10 @@
  			{{ layout }}
 		{% endautoescape %}
 	</div>
-	{% if download and blocks|length > 0 %}
+	{% if allow_download and blocks|length > 0 %}
   <div class="recap_actions" style="margin-top: 20px">
 		<div id="recap_editor"></div>
-		<button class="btn" id="recap_cmd">Download</button>
+		<button class="btn" id="recap_cmd">{{ download_text }}</button>
   </div>
 	{% endif %}
 </div>
