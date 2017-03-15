@@ -99,6 +99,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         else:
             raise Exception('The XBlock type selected does not exist.')
 
+    def get_answer(self, answer):
+        """
+        Returns formatted answer or placeholder string
+        """
+        return str(answer).replace('\n','<br />\n') if answer else "Nothing to recap."
+
 
     @XBlock.supports("multi_device")
     def student_view(self, context=None):
@@ -111,14 +117,13 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             blocks.append((getattr(block, question), getattr(block, answer)))
 
         block_layout = '<p class="recap_question">{}</p><p class="recap_answer"><em>{}</em></p>'
-        qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in blocks)
+        qa_str = ''.join(block_layout.format(q, self.get_answer(a)) for q, a in blocks)
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
         current = 0
         block_sets = []
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-        #for m in sorted(re.finditer(pattern, layout), key=lambda m:int(m.start(0)), reverse=True):
         for m in re.finditer(pattern, layout):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
@@ -127,7 +132,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     question, answer = self.get_field_names(xblock_type)
                     subblocks.append((getattr(block, question), getattr(block, answer)))
                     current += 1
-            qa_str = ''.join(block_layout.format(q, (a or "Nothing to recap.")) for q, a in subblocks)
+            qa_str = ''.join(block_layout.format(q, self.get_answer(a)) for q, a in subblocks)
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):
