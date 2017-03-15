@@ -100,6 +100,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             raise Exception('The XBlock type selected does not exist.')
 
 
+    @XBlock.supports("multi_device")
     def student_view(self, context=None):
         """
         The primary view of the RecapXBlock, shown to students when viewing courses.
