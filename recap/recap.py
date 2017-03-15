@@ -103,7 +103,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns formatted answer or placeholder string
         """
-        return str(answer).replace('\n','<br />\n') if answer else "Nothing to recap."
+        return re.sub(r'\n+', '<br /><br />', answer) if answer else "Nothing to recap."
 
 
     @XBlock.supports("multi_device")
@@ -116,7 +116,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             question, answer = self.get_field_names(xblock_type)
             blocks.append((getattr(block, question), getattr(block, answer)))
 
-        block_layout = '<p class="recap_question">{}</p><p class="recap_answer"><em>{}</em></p>'
+        block_layout = '<p class="recap_question">{}</p><p class="recap_answer">{}</p>'
         qa_str = ''.join(block_layout.format(q, self.get_answer(a)) for q, a in blocks)
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
