@@ -4,18 +4,24 @@ import re
 import logging
 import pkg_resources
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer, String, Float, List, Boolean
+from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
 from xblock.fragment import Fragment
+from xblock.runtime import KvsFieldData, KeyValueStore
 from xblockutils.studio_editable import StudioEditableXBlockMixin
 from xblockutils.settings import XBlockWithSettingsMixin
 from xblockutils.resources import ResourceLoader
+from courseware.model_data import DjangoKeyValueStore, FieldDataCache
+from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
+from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.split_mongo import BlockKey
 from opaque_keys.edx.locations import BlockUsageLocator
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
+from submissions import api
 
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
+
 
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     """
@@ -74,7 +80,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     def get_block(self, xblock):
         try:
             usage_key = self.scope_ids.usage_id.course_key.make_usage_key(xblock[1], xblock[0])
-            return self.runtime.get_block(usage_key), xblock[1]
+            return usage_key, xblock[1]
         except:
             InvalidKeyError
 
@@ -83,7 +89,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for x_id, x_type in xblock_list:
             try:
                 usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
-                yield self.runtime.get_block(usage_key), x_type
+                yield usage_key, x_type
             except:
                 InvalidKeyError
 
@@ -106,11 +112,51 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         else:
             raise Exception('The XBlock type selected does not exist.')
 
-    def get_answer(self, answer):
+
+    def get_submission_key(self, usage_key):
+        return dict(
+            student_id=self.runtime.anonymous_student_id,
+            course_id=unicode(usage_key.course_key),
+            item_id=unicode(usage_key),
+            item_type=usage_key.block_type,
+        )
+
+
+    def get_submission(self, usage_key):
+        try:
+            submission_key = self.get_submission_key(usage_key)
+            submission = api.get_submissions(submission_key, limit=1)
+            value = submission[0]["answer"]
+        except IndexError:
+            value = None
+        return value
+
+
+    def get_display_answer(self, answer):
         """
         Returns formatted answer or placeholder string
         """
         return re.sub(r'\n+', '<br /><br />', answer) if answer else "Nothing to recap."
+
+
+    def get_answer(self, usage_key, block, field):
+        """
+        Returns value from Scope.user_state field in any xblock
+        """
+        field_data = block.runtime.service(block, 'field-data')
+        if field_data.has(block, field):
+            return field_data.get(block, field) # value = block.fields[field].from_json(value)
+        else:
+            descriptor = modulestore().get_item(usage_key, depth=1)
+            real_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
+            field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
+                usage_key.course_key,
+                real_user,
+                descriptor,
+                asides=XBlockAsidesConfig.possible_asides(),
+            )
+            student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
+            return student_data.get(block, field)
 
 
     @XBlock.supports("multi_device")
@@ -119,12 +165,21 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
         blocks = []
-        for block, xblock_type in self.get_blocks(self.xblock_list):
-            question, answer = self.get_field_names(xblock_type)
-            blocks.append((getattr(block, question), getattr(block, answer)))
+        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+            block = self.runtime.get_block(usage_key)
+            question_field, answer_field = self.get_field_names(xblock_type)
+
+            logger.error(str(block._field_data.has(block, answer)))
+
+            def_id = self.runtime.id_reader.get_definition_id(usage_key)
+            block_type = self.runtime.id_reader.get_block_type(def_id)
+            keys = ScopeIds(self.runtime.user_id, block_type, def_id, usage_key)
+            logger.error(str(def_id)+" "+str(block_type)+" "+str(keys))
+
+            blocks.append((getattr(block, question_field), getattr(block, answer_field)))
 
         block_layout = '<p class="recap_question">{}</p><p class="recap_answer">{}</p>'
-        qa_str = ''.join(block_layout.format(q, self.get_answer(a)) for q, a in blocks)
+        qa_str = ''.join(block_layout.format(q, self.get_display_answer(a)) for q, a in blocks)
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
@@ -135,11 +190,13 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             subblocks = []
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
-                    block, xblock_type = self.get_block(self.xblock_list[x])
-                    question, answer = self.get_field_names(xblock_type)
-                    subblocks.append((getattr(block, question), getattr(block, answer)))
+                    usage_key, xblock_type = self.get_block(self.xblock_list[x])
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    answer = self.get_answer(usage_key, block, answer_field)
+                    subblocks.append((getattr(block, question_field), answer))
                     current += 1
-            qa_str = ''.join(block_layout.format(q, self.get_answer(a)) for q, a in subblocks)
+            qa_str = ''.join(block_layout.format(q, self.get_display_answer(a)) for q, a in subblocks)
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):
