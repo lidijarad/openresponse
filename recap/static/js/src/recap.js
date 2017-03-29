@@ -2,7 +2,7 @@
 function RecapXBlock(runtime, element) {
 	$(function ($) {
  		$('#recap_cmd').click(function () {
- 				var doc = new jsPDF('p', 'pt', 'letter');
+ 				var doc = new jspdf('p', 'pt', 'letter');
 				doc.fromHTML($('#recap_answers').get(0), 30, 20, {
 					'width': 550,
 					'elementHandlers': {
