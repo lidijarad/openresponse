@@ -168,15 +168,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             block = self.runtime.get_block(usage_key)
             question_field, answer_field = self.get_field_names(xblock_type)
-
-            logger.error(str(block._field_data.has(block, answer)))
-
-            def_id = self.runtime.id_reader.get_definition_id(usage_key)
-            block_type = self.runtime.id_reader.get_block_type(def_id)
-            keys = ScopeIds(self.runtime.user_id, block_type, def_id, usage_key)
-            logger.error(str(def_id)+" "+str(block_type)+" "+str(keys))
-
-            blocks.append((getattr(block, question_field), getattr(block, answer_field)))
+            answer = self.get_answer(usage_key, block, answer_field)
+            blocks.append((getattr(block, question_field), answer))
 
         block_layout = '<p class="recap_question">{}</p><p class="recap_answer">{}</p>'
         qa_str = ''.join(block_layout.format(q, self.get_display_answer(a)) for q, a in blocks)
