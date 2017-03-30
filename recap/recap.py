@@ -143,9 +143,10 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns value from Scope.user_state field in any xblock
         """
+        value = None
         field_data = block.runtime.service(block, 'field-data')
         if field_data.has(block, field):
-            return field_data.get(block, field) # value = block.fields[field].from_json(value)
+            value = field_data.get(block, field) # value = block.fields[field].from_json(value)
         else:
             descriptor = modulestore().get_item(usage_key, depth=1)
             if block.runtime.get_real_user:
@@ -157,9 +158,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     asides=XBlockAsidesConfig.possible_asides(),
                 )
                 student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
-                return student_data.get(block, field)
-            else:
-                return None
+                if student_data.has(block, field):
+                    value = student_data.get(block, field)
+        return value
 
 
     @XBlock.supports("multi_device")
