@@ -170,10 +170,13 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-            block = self.runtime.get_block(usage_key)
-            question_field, answer_field = self.get_field_names(xblock_type)
-            answer = self.get_answer(usage_key, block, answer_field)
-            blocks.append((getattr(block, question_field), answer))
+            try:
+                block = self.runtime.get_block(usage_key)
+                question_field, answer_field = self.get_field_names(xblock_type)
+                answer = self.get_answer(usage_key, block, answer_field)
+                blocks.append((getattr(block, question_field), answer))
+            except Exception as e:
+                logger.warn(str(e))
 
         block_layout = '<p class="recap_question">{}</p><p class="recap_answer">{}</p>'
         qa_str = ''.join(block_layout.format(q, self.get_display_answer(a)) for q, a in blocks)
