@@ -168,7 +168,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
-        print self.id
+        print "SELF"
+        print self
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
