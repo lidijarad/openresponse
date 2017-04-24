@@ -205,8 +205,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         context = {
             'recap_answers_id': 'recap_answers_' + self.scope_ids.usage_id._to_string(),
-            'recap_actions_id': 'recap_actions_' + self.scope_ids.usage_id._to_string(),
             'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id._to_string(),
+            'recap_cmd_id': 'recap_cmd_' + self.scope_ids.usage_id._to_string(),
             'blocks': blocks,
             'layout': layout,
             'allow_download': self.allow_download,
@@ -218,7 +218,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
-        frag.initialize_js('RecapXBlock')
+        frag.initialize_js('RecapXBlock', {
+            'recap_cmd_id': 'recap_cmd_id' + self.scope_ids.usage_id._to_string(),
+            'recap_actions_id': 'recap_actions_' + self.scope_ids.usage_id._to_string(),
+            'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id._to_string(),
+        })
+
         return frag
 
 

@@ -6,9 +6,9 @@
 		{% endautoescape %}
 	</div>
 	{% if allow_download and blocks|length > 0 %}
-  <div class="{{recap_actions_id}}"" style="margin-top: 20px">
-		<div id="recap_editor"></div>
-		<button class="btn" id="{{recap_editor_id}}">{{ download_text }}</button>
+  <div class="recap_actions" style="margin-top: 20px">
+		<div id="{{recap_editor_id}}"></div>
+		<button class="btn" id="{{recap_cmd_id}}">{{ download_text }}</button>
   </div>
 	{% endif %}
 </div>

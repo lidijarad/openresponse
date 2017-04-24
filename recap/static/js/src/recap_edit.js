@@ -124,7 +124,6 @@ function StudioEditableXBlockMixin(runtime, element) {
 
             newTextBoxDiv.on('click', '.remove', function (e) {
 
-                console.log("Removing..")
                 var target = $(e.target);
                 var parent = target.parent();
                 parent.hide("fast", function() {

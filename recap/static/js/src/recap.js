@@ -1,12 +1,12 @@
 /* Javascript for RecapXBlock. */
-function RecapXBlock(runtime, element) {
+function RecapXBlock(runtime, element, data) {
 	$(function ($) {
- 		$('#recap_cmd').click(function () {
+ 		$('#' + data.recap_cmd_id).click(function () {
  				var doc = new jsPDF('p', 'pt', 'letter');
-				doc.fromHTML($('#recap_answers').get(0), 30, 20, {
+				doc.fromHTML($('#' + data.recap_answers_id).get(0), 30, 20, {
 					'width': 550,
 					'elementHandlers': {
-						'#recap_editor': function(element, renderer){
+						'#' + data.recap_editor_id: function(element, renderer){
 							return true;
 						}
 					}
