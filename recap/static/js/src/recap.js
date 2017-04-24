@@ -1,9 +1,11 @@
 /* Javascript for RecapXBlock. */
 function RecapXBlock(runtime, element, data) {
 	$(function ($) {
+		console.log(data);
 		var recap_cmd = '#' + data.recap_cmd_id;
 		var recap_answers = '#' + data.recap_answers_id;
 		var recap_editor = '#' + data.recap_editor_id;
+		console.log(recap_cmd, recap_answers, recap_editor);
  		$(recap_cmd).click(function () {
  				var doc = new jsPDF('p', 'pt', 'letter');
 				doc.fromHTML($(recap_answers).get(0), 30, 20, {
