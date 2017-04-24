@@ -203,10 +203,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for start, end, string in reversed(block_sets):
             layout = layout[0:start] + string + layout[end:]
 
+        idArray = self.scope_ids.usage_id._to_string().split('@')
+        xblockId = idArray[len(idArray) -1]
         context = {
-            'recap_answers_id': 'recap_answers_' + self.scope_ids.usage_id._to_string(),
-            'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id._to_string(),
-            'recap_cmd_id': 'recap_cmd_' + self.scope_ids.usage_id._to_string(),
+            'recap_answers_id': 'recap_answers_' + xblockId,
+            'recap_editor_id': 'recap_editor_' + xblockId,
+            'recap_cmd_id': 'recap_cmd_' + xblockId,
             'blocks': blocks,
             'layout': layout,
             'allow_download': self.allow_download,
@@ -219,9 +221,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
         frag.initialize_js('RecapXBlock', {
-            'recap_answers_id': 'recap_answers_' + self.scope_ids.usage_id._to_string(),
-            'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id._to_string(),
-            'recap_cmd_id': 'recap_cmd_' + self.scope_ids.usage_id._to_string()
+            'recap_answers_id': 'recap_answers_' + xblockId,
+            'recap_editor_id': 'recap_editor_' + xblockId,
+            'recap_cmd_id': 'recap_cmd_' + xblockId
         })
 
         return frag
