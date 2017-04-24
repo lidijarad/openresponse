@@ -204,9 +204,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             layout = layout[0:start] + string + layout[end:]
 
         context = {
-            'recap_answers_id': 'recap_answers_' + self.scope_ids.usage_id.toString(),
-            'recap_actions_id': 'recap_actions_' + self.scope_ids.usage_id.toString(),
-            'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id.toString(),
+            'recap_answers_id': 'recap_answers_' + self.scope_ids.usage_id._to_string(),
+            'recap_actions_id': 'recap_actions_' + self.scope_ids.usage_id._to_string(),
+            'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id._to_string(),
             'blocks': blocks,
             'layout': layout,
             'allow_download': self.allow_download,
