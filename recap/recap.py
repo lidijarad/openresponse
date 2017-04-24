@@ -168,7 +168,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
-        print "SELF"
+
         print self.scope_ids.usage_id
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
@@ -205,6 +205,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             layout = layout[0:start] + string + layout[end:]
 
         context = {
+            'recap_answers_id': 'recap_answers_' + self.scope_ids.usage_id,
+            'recap_actions_id': 'recap_actions_' + self.scope_ids.usage_id,
+            'recap_editor_id': 'recap_editor_' + self.scope_ids.usage_id,
             'blocks': blocks,
             'layout': layout,
             'allow_download': self.allow_download,
