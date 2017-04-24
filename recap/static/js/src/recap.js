@@ -1,12 +1,15 @@
 /* Javascript for RecapXBlock. */
 function RecapXBlock(runtime, element, data) {
 	$(function ($) {
- 		$('#' + data.recap_cmd_id).click(function () {
+		var recap_cmd = '#' + data.recap_cmd_id;
+		var recap_answers = '#' + data.recap_answers_id;
+		var recap_editor = '#' + data.recap_editor_id;
+ 		$(recap_cmd).click(function () {
  				var doc = new jsPDF('p', 'pt', 'letter');
-				doc.fromHTML($('#' + data.recap_answers_id).get(0), 30, 20, {
+				doc.fromHTML($(recap_answers).get(0), 30, 20, {
 					'width': 550,
 					'elementHandlers': {
-						'#' + data.recap_editor_id: function(element, renderer){
+						recap_editor: function(element, renderer){
 							return true;
 						}
 					}
