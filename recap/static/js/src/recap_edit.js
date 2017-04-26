@@ -51,18 +51,39 @@ function StudioEditableXBlockMixin(runtime, element) {
         if (type == 'html' && tinyMceAvailable) {
             tinyMCE.baseURL = baseUrl + "/js/vendor/tinymce/js/tinymce";
             $field.tinymce({
-                theme: 'modern',
-                skin: 'studio-tmce4',
-                height: '200px',
-                formats: { code: { inline: 'code' } },
-                codemirror: { path: "" + baseUrl + "/js/vendor" },
-                convert_urls: false,
-                plugins: "link codemirror",
-                menubar: false,
-                statusbar: false,
-                toolbar_items_size: 'small',
-                toolbar: "formatselect | styleselect | bold italic underline forecolor wrapAsCode | bullist numlist outdent indent blockquote | link unlink | code",
-                resize: "both",
+                    script_url: "" + baseUrl + "/js/vendor/tinymce/js/tinymce/tinymce.full.min.js",
+                    theme: "modern",
+                    skin: 'studio-tmce4',
+                    schema: "html5",
+                    convert_urls: false,
+                    formats: {
+                      code: {
+                        inline: 'code'
+                      }
+                    },
+                    visual: false,
+                    plugins: "textcolor, link, image, codemirror",
+                    codemirror: {
+                      path: "" + baseUrl + "/js/vendor"
+                    },
+                    image_advtab: true,
+                    toolbar: "formatselect | fontselect | bold italic underline forecolor wrapAsCode | bullist numlist outdent indent blockquote | link unlink image | code",
+                    block_formats: interpolate("%(paragraph)s=p;%(preformatted)s=pre;%(heading3)s=h3;%(heading4)s=h4;%(heading5)s=h5;%(heading6)s=h6", {
+                      paragraph: gettext("Paragraph"),
+                      preformatted: gettext("Preformatted"),
+                      heading3: gettext("Heading 3"),
+                      heading4: gettext("Heading 4"),
+                      heading5: gettext("Heading 5"),
+                      heading6: gettext("Heading 6")
+                    }, true),
+                    width: '100%',
+                    height: '400px',
+                    menubar: false,
+                    statusbar: false,
+                    valid_children: "+body[style]",
+                    valid_elements: "*[*]",
+                    extended_valid_elements: "*[*]",
+                    invalid_elements: "",
                 setup : function(ed) {
                     ed.on('change', fieldChanged);
                 }
@@ -124,7 +145,6 @@ function StudioEditableXBlockMixin(runtime, element) {
 
             newTextBoxDiv.on('click', '.remove', function (e) {
 
-                console.log("Removing..")
                 var target = $(e.target);
                 var parent = target.parent();
                 parent.hide("fast", function() {

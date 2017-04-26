@@ -136,7 +136,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns formatted answer or placeholder string
         """
-        return re.sub(r'\n+', '<br /><br />', answer) if answer else "Nothing to recap."
+        return re.sub(r'\n+', '<div><span style="color: white">|</span></div>', answer) if answer else "Nothing to recap."
 
 
     def get_answer(self, usage_key, block, field):
@@ -168,6 +168,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         The primary view of the RecapXBlock, shown to students when viewing courses.
         """
+
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
@@ -178,7 +179,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             except Exception as e:
                 logger.warn(str(e))
 
-        block_layout = '<p class="recap_question">{}</p><p class="recap_answer">{}</p>'
+        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-after:always">{}</div>'
         qa_str = ''.join(block_layout.format(q, self.get_display_answer(a)) for q, a in blocks)
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
@@ -202,7 +203,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for start, end, string in reversed(block_sets):
             layout = layout[0:start] + string + layout[end:]
 
+        idArray = self.scope_ids.usage_id._to_string().split('@')
+        xblockId = idArray[len(idArray) -1]
         context = {
+            'recap_answers_id': 'recap_answers_' + xblockId,
+            'recap_editor_id': 'recap_editor_' + xblockId,
+            'recap_cmd_id': 'recap_cmd_' + xblockId,
             'blocks': blocks,
             'layout': layout,
             'allow_download': self.allow_download,
@@ -214,7 +220,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
-        frag.initialize_js('RecapXBlock')
+        frag.initialize_js('RecapXBlock', {
+            'recap_answers_id': 'recap_answers_' + xblockId,
+            'recap_editor_id': 'recap_editor_' + xblockId,
+            'recap_cmd_id': 'recap_cmd_' + xblockId
+        })
+
         return frag
 
 
