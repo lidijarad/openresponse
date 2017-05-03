@@ -180,7 +180,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 logger.warn(str(e))
 
         block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-after:always">{}</div>'
-        qa_str = ''.join(block_layout.format(q, self.get_display_answer(a)) for q, a in blocks)
+        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
