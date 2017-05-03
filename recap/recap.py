@@ -136,7 +136,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns formatted answer or placeholder string
         """
-        return re.sub(r'\n+', '<div><span style="color: white">|</span></div>', u(answer)) if u(answer) else "Nothing to recap."
+        return re.sub(r'\n+', '<div><span style="color: white">|</span></div>', answer) if answer else "Nothing to recap."
 
 
     def get_answer(self, usage_key, block, field):
