@@ -197,7 +197,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     answer = self.get_answer(usage_key, block, answer_field)
                     subblocks.append((getattr(block, question_field), answer))
                     current += 1
-            qa_str = ''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks)
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):
