@@ -72,28 +72,29 @@ function RecapXBlock(runtime, element, data) {
 				blocks.push([document.getElementById('q' + index.toString()).innerHTML, chunk_lines[index]])
 			})
 	
-			var element = '';
+			var html = '<div>';
 			var lines = 0;
 			for (var i=0; i < blocks.length; i++) {
-				element += '<p>' + blocks[i][0] + '</p><p></p>'
+				html += '<p>' + blocks[i][0] + '</p><p></p>'
 				lines += 2;
-				element += '<div class="recap_answer">';
+				html += '<div class="recap_answer">';
 				var chunks = blocks[i][1];
 				for (var j=0; j < chunks.length; j++ ) {
 					var chunk = chunks[j]
 					lines += chunk[1]
 					if (lines >= 48) { // the PDF will have a maximum of 48 lines
 						lines = 0;
-						element += '<div class="html2pdf__page-break"></div>';
+						html += '<div class="html2pdf__page-break"></div>';
 					}
-					element += chunk[0] + '<p></p>';
+					html += chunk[0] + '<p></p>';
 					lines += 1;
 				}
-				element += '</div>'
-				element += '<div class="html2pdf__page-break"></div>'
+				html += '</div>'
+				html += '<div class="html2pdf__page-break"></div>'
 			}
+			html += '</div>'
 
-			html2pdf(element, {
+			html2pdf(html, {
 			  margin: 1,
 			  filename: 'myfile.pdf',
 			  image: { type: 'jpeg',quality: 0.98 },
