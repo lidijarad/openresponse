@@ -185,7 +185,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         qa_str = unicode(''.join(unicode(block_layout).format(i, q, i, self.get_display_answer(a)) for q, a, i in blocks))
 
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
-      
+        
         current = 0
         block_sets = []
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
