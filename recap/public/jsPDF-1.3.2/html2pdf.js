@@ -70,13 +70,10 @@ var html2pdf = (function(html2canvas, jsPDF) {
     opt.html2canvas.onrendered = function(canvas) {
       var pdf = html2pdf.makePDF(canvas, pageSize, opt);
       // Test if the device is mobile
-      if (/Android/i.test(navigator.userAgent))
-      {
-           var blob = pdf.output('datauristring'); //gives the pdf url
-           window.open(URL.createObjectURL(blob));
-      }
-      else
-      {
+      if (Android && Android.saveAs){
+           var blob = pdf.output();
+           Android.saveAs(blob)
+      } else {
            pdf.save(opt.filename);
       }
       onRendered(canvas);
