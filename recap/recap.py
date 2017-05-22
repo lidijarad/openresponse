@@ -170,20 +170,17 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
 
         blocks = []
-        i = 0
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
                 block = self.runtime.get_block(usage_key)
                 question_field, answer_field = self.get_field_names(xblock_type)
                 answer = self.get_answer(usage_key, block, answer_field)
-                blocks.append((getattr(block, question_field), answer, i))
-                i+=1
+                blocks.append((getattr(block, question_field), answer))
             except Exception as e:
                 logger.warn(str(e))
 
-        block_layout = '<p class="recap_question" id="q{}">{}</p><div class="recap_answer" style="page-break-before:always" id="a{}">{}</div>'
-        qa_str = unicode(''.join(unicode(block_layout).format(i, q, i, self.get_display_answer(a)) for q, a, i in blocks))
-
+        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
+        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
         
         current = 0
@@ -197,9 +194,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
                     answer = self.get_answer(usage_key, block, answer_field)
-                    subblocks.append((getattr(block, question_field), answer, current))
+                    subblocks.append((getattr(block, question_field), answer))
                     current += 1
-            qa_str = unicode(''.join(unicode(block_layout).format(i, q, i, self.get_display_answer(a)) for q, a, i in subblocks))
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):
@@ -223,6 +220,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2canvas.min.js'))
         frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2pdf.js'))
+
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
         frag.initialize_js('RecapXBlock', {
             'recap_answers_id': 'recap_answers_' + xblockId,
