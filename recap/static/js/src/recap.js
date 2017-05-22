@@ -16,7 +16,7 @@ function RecapXBlock(runtime, element, data) {
 
 
 			html2pdf(pdf_element, {
-			  margin: [1, 1, 0.5, 1],
+			  margin: [0.8, 1, 0.5, 1],
 			  filename: pdf_name,
 			  image: { type: 'jpeg',quality: 0.98 },
 			  html2canvas: { dpi: 192, letterRendering: true },
