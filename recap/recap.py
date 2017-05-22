@@ -182,7 +182,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
         qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
-      
+        
         current = 0
         block_sets = []
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
@@ -194,9 +194,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
                     answer = self.get_answer(usage_key, block, answer_field)
-                    subblocks.append((getattr(block, question_field), answer))
+                    subblocks.append((getattr(block, question_field), answer, current))
                     current += 1
-            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+            qa_str = unicode(''.join(unicode(block_layout).format(i, q, i, self.get_display_answer(a)) for q, a, i in subblocks))
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):

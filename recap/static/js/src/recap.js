@@ -14,7 +14,6 @@ function RecapXBlock(runtime, element, data) {
 
      var pdf_element = document.getElementById(String(data.recap_answers_id)).innerHTML;
 
-
 			html2pdf(pdf_element, {
 			  margin: [0.8, 1, 0.5, 1],
 			  filename: pdf_name,
