@@ -70,7 +70,7 @@ var html2pdf = (function(html2canvas, jsPDF) {
     opt.html2canvas.onrendered = function(canvas) {
       var pdf = html2pdf.makePDF(canvas, pageSize, opt);
       // Test if the device is mobile
-      if (Android && Android.saveAs){
+      if (typeof(Android) != 'undefined' && Android.saveAs){
            var blob = pdf.output();
            Android.saveAs(blob);
       } else {
