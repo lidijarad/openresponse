@@ -69,7 +69,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     )
 
     editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download', 'download_text',)
-
+    show_in_read_only_mode = True
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
