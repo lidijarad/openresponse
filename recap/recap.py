@@ -3,6 +3,7 @@
 import re
 import logging
 import pkg_resources
+from django.template.loader import get_template
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
 from xblock.fragment import Fragment
@@ -255,6 +256,38 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         frag.initialize_js('StudioEditableXBlockMixin')
         return frag
 
+
+    def recap_blocks_listing_view(self, context=None):
+        """This view is used in the Racap tab in the LMS Instructor Dashboard
+        to display all available course ORA blocks.
+
+        Args:
+            context: contains two items:
+                "recap_items" - all course items with names and parents, example:
+                    [{"parent_name": "Vertical name",
+                      "name": "Recap Display Name",
+                      "url_grade_available_responses": "/grade_available_responses_view",
+                      "staff_assessment": false,
+                      "parent_id": "vertical_block_id",
+                      "url_base": "/student_view",
+                      "id": "recap_block_id"
+                     }, ...]
+        Returns:
+            (Fragment): The HTML Fragment for this XBlock.
+        """
+        recap_items = context.get('recap_items', []) if context else []
+
+        context_dict = {
+            "recap_items": json.dumps(recap_items),
+        }
+
+        instructor_dashboard_fragment = Fragment()
+        instructor_dashboard_fragment.content = loader.render_django_template('static/html/recap_dashboard.html', context_dict)
+        instructor_dashboard_fragment.add_javascript(loader.load_unicode("static/js/src/recap_instructor.js"))
+        instructor_dashboard_fragment.initialize_js('RecapDashboard')
+
+        return instructor_dashboard_fragment
+  
 
     @staticmethod
     def workbench_scenarios():
