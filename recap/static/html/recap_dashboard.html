@@ -1,5 +1,32 @@
+
+{% spaceless %}
 <section class="recap-block">
     <div class="recap-content">
-        <div class="open-response-assessment-summary"></div>
     </div>
 </section>
+
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Recap</th>
+      <th>Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{user.username }}</td>
+        <td>{{user.first_name }}{{user.last_name}}</td>
+        <td>{{user.email }}</td>
+        <td>hi</td>
+        <td><input type='button' value='{{download_text}}'></input></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endspaceless %}

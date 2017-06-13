@@ -19,10 +19,10 @@ from opaque_keys.edx.locations import BlockUsageLocator
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from submissions import api
-
+from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
-
+import json
 
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     """
@@ -276,9 +276,13 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             (Fragment): The HTML Fragment for this XBlock.
         """
         recap_items = context.get('recap_items', []) if context else []
-
+        users = context.get('users', []) if context else []
+        
         context_dict = {
-            "recap_items": json.dumps(recap_items),
+            "recap_items": json.dumps(recap_items)
+            "users": users,
+            "recap_name": recap_items[0]['name'],
+            "download_text": self.download_text
         }
 
         instructor_dashboard_fragment = Fragment()
@@ -288,6 +292,33 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         return instructor_dashboard_fragment
   
+
+    
+    def convertHtmlToPdf(self, sourceHtml, outputFilename):
+        # open output file for writing (truncated binary)
+        resultFile = open(outputFilename, "w+b")
+        # convert HTML to PDF
+        pisaStatus = pisa.CreatePDF(
+        sourceHtml, # the HTML to convert
+        dest=resultFile) # file handle to recieve result
+        # close output file
+        resultFile.close() # close output file
+        # return True on success and False on errors
+        return pisaStatus.err
+
+    def generate_PDF(self, data, request):
+        
+        data = data['recap_answers']
+        template = get_template('recap.html')
+        html  = template.render(Context(data))
+        file = open('test.pdf', "w+b")
+        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
+            encoding='utf-8')
+        file.seek(0)
+        pdf = file.read()
+        file.close()            
+        return HttpResponse(pdf, 'application/pdf')
+
 
     @staticmethod
     def workbench_scenarios():
