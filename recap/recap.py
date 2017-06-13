@@ -278,6 +278,10 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         recap_items = context.get('recap_items', []) if context else []
         users = context.get('users', []) if context else []
         
+        user_id = ''
+        for user in users:
+            user_id = user.id
+
         context_dict = {
             "recap_items": json.dumps(recap_items),
             "users": users,
@@ -288,7 +292,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         instructor_dashboard_fragment = Fragment()
         instructor_dashboard_fragment.content = loader.render_django_template('static/html/recap_dashboard.html', context_dict)
         instructor_dashboard_fragment.add_javascript(loader.load_unicode("static/js/src/recap_instructor.js"))
-        instructor_dashboard_fragment.initialize_js('RecapDashboard')
+        instructor_dashboard_fragment.initialize_js('RecapDashboard', {
+            "user_id": user_id
+            })
 
         return instructor_dashboard_fragment
   

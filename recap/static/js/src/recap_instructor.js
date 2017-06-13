@@ -7,7 +7,7 @@ function RecapDashboard(runtime, element, data) {
 
     	var user_id = '#' + data.user_id;
 
-        $('#').click(function(eventObject) {
+        $(user_id).click(function(eventObject) {
             console.log('hiii');
             var handlerUrl = runtime.handlerUrl(element, 'generate_pdf');
             //var answer_html = $('#student-input').val();
