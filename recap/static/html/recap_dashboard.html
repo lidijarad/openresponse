@@ -12,7 +12,6 @@
       <th>Username</th>
       <th>Name</th>
       <th>Email</th>
-      <th>Recap</th>
       <th>Download</th>
     </tr>
   </thead>
@@ -22,11 +21,32 @@
         <td>{{user.username }}</td>
         <td>{{user.first_name }}{{user.last_name}}</td>
         <td>{{user.email }}</td>
-        <td>hi</td>
-        <td><input type='button' value='{{download_text}}'></input></td>
+        <td><input id={{user.email}} type='button' value='{{download_text}}'></input></td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
+{% if users.has_other_pages %}
+  <ul class="pagination">
+    {% if users.has_previous %}
+      <li><a href="?page={{ users.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in users.paginator.page_range %}
+      {% if users.number == i %}
+        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+      {% else %}
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if users.has_next %}
+      <li><a href="?page={{ users.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+{% endif %}
+
 
 {% endspaceless %}

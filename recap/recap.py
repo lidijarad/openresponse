@@ -279,7 +279,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         users = context.get('users', []) if context else []
         
         context_dict = {
-            "recap_items": json.dumps(recap_items)
+            "recap_items": json.dumps(recap_items),
             "users": users,
             "recap_name": recap_items[0]['name'],
             "download_text": self.download_text
