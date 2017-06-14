@@ -21,7 +21,7 @@
         <td>{{user.username }}</td>
         <td>{{user.first_name }} {{user.last_name}}</td>
         <td>{{user.email }}</td>
-        <td><input id='{{user.id}}' type='button' value='{{download_text}}'></input></td>
+        <td><input id='user_{{user.id}}' type='button' value='{{download_text}}'></input></td>
       </tr>
     {% endfor %}
   </tbody>
@@ -48,13 +48,5 @@
   </ul>
 {% endif %}
 
-<script>
-$(document).ready(function () {      
-     $('#recap-table tr').click(function (event) {
-          alert(this.); //trying to alert id of the clicked row          
-
-     });
- });
-</script>
 
 {% endspaceless %}

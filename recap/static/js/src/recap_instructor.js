@@ -1,13 +1,9 @@
 /* Javascript for OpenResponseXBlock. */
 function RecapDashboard(runtime, element, data) {
 
-    $(function ($) {
-    	$('#recap-table tr button').click(function (event) {
-          alert($(this).attr('id')); 
-
     	var user_id = '#' + data.user_id;
 
-        $(user_id).click(function(eventObject) {
+        $('#user_1').click(function(event) {
             console.log('hiii');
             var handlerUrl = runtime.handlerUrl(element, 'generate_pdf');
             //var answer_html = $('#student-input').val();
@@ -23,5 +19,4 @@ function RecapDashboard(runtime, element, data) {
                 }
             });
         });
-    });
 }
