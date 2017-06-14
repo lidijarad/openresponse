@@ -288,7 +288,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         instructor_dashboard_fragment = Fragment()
         instructor_dashboard_fragment.content = loader.render_django_template('static/html/recap_dashboard.html', context_dict)
         #instructor_dashboard_fragment.add_javascript(self.resource_string("static/js/src/recap_instructor.js"))
-        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, "static/js/src/recap_instructor.js"))
+        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, "static/js/src/lms/recap_instructor.js"))
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
 
         return instructor_dashboard_fragment
