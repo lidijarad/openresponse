@@ -1,5 +1,5 @@
 /* Javascript for OpenResponseXBlock. */
-function RecapDashboard(runtime, element, data) {
+(function RecapDashboard(runtime, element, data) {
 
     	var user_id = '#' + data.user_id;
 
@@ -19,4 +19,5 @@ function RecapDashboard(runtime, element, data) {
                 }
             });
         });
-}
+})(RecapDashboard);
+
