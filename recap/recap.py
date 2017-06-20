@@ -275,22 +275,58 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Returns:
             (Fragment): The HTML Fragment for this XBlock.
         """
+        #self.student_answer = ''
+        blocks = []
+        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+            try:
+                block = self.runtime.get_block(usage_key)
+                question_field, answer_field = self.get_field_names(xblock_type)
+                answer = self.get_answer(usage_key, block, answer_field)
+                blocks.append((getattr(block, question_field), answer))
+            except Exception as e:
+                logger.warn(str(e))
+        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
+        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+        layout = self.string_html.replace('[[CONTENT]]', qa_str)
+        #current = 0
+        #block_sets = []
+        #pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
+        #for m in re.finditer(pattern, layout):
+        #    subblocks = []
+        #    for x in range(current, current+int(m.group(1))):
+        #        if len(self.xblock_list) > x:
+        #            usage_key, xblock_type = self.get_block(self.xblock_list[x])
+        #            block = self.runtime.get_block(usage_key)
+        #            question_field, answer_field = self.get_field_names(xblock_type)
+        #            answer = self.get_answer(usage_key, block, answer_field)
+        #            subblocks.append((getattr(block, question_field), answer))
+        #            current += 1
+        #    qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+        #    block_sets.append((m.start(0), m.end(0), qa_str))
+
+        #for start, end, string in reversed(block_sets):
+        #    layout = layout[0:start] + string + layout[end:]
+        #self.student_answer = layout
         recap_items = context.get('recap_items', []) if context else []
         users = context.get('users', []) if context else []
-        
         context_dict = {
             "recap_items": json.dumps(recap_items),
             "users": users,
             "recap_name": recap_items[0]['name'],
-            "download_text": self.download_text
+            "download_text": self.download_text,
+            "layout": layout
         }
-
         instructor_dashboard_fragment = Fragment()
         instructor_dashboard_fragment.content = loader.render_django_template('static/html/recap_dashboard.html', context_dict)
+        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
+        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
+        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2canvas.min.js'))
+        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2pdf.js'))
         instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, "public/recap_instructor.js"))
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
 
         return instructor_dashboard_fragment
+
   
 
     
@@ -309,7 +345,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     def generate_PDF(self, data, request):
         
         data = data['recap_answers']
-        template = get_template('recap.html')
+        #template = get_template('recap.html')
         html  = template.render(Context(data))
         file = open('test.pdf', "w+b")
         pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
