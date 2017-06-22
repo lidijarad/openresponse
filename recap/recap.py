@@ -158,10 +158,10 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     asides=XBlockAsidesConfig.possible_asides(),
                 )
                 student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
-                if student_data.has(block, field, real_user):
+                if student_data.has(block, field):
                     value = student_data.get(block, field)
         return value
-             
+
     def get_user_answer(self, usage_key, block, field, user):
         """
         Returns value from Scope.user_state field in any xblock
