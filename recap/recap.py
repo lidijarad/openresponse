@@ -3,7 +3,6 @@
 import re
 import logging
 import pkg_resources
-from django.template.loader import get_template
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
 from xblock.fragment import Fragment
