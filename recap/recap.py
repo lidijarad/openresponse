@@ -175,7 +175,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Returns value from Scope.user_state field in any xblock
         """
         value = None
-	current_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
+    current_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
         field_data = block.runtime.service(block, 'field-data')
         if field_data.has(block, field):
             value = field_data.get(block, field) # value = block.fields[field].from_json(value)
@@ -191,7 +191,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 )
                 student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
                 if student_data.has(block, field):
-		    print "STUDENT DATA", student_data
+            print "STUDENT DATA", student_data
                     value = student_data.get(block, field)
         return value
      
@@ -304,45 +304,45 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Returns:
             (Fragment): The HTML Fragment for this XBlock.
         """
-	
-	users = context.get('users', []) if context else []
+    
+    users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
 
-	
-	user_blocks = []
-	for user in users:
+    
+    user_blocks = []
+    for user in users:
             blocks = []
             for usage_key, xblock_type in self.get_blocks(self.xblock_list):
                 try:
                     block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
                     answer = self.get_user_answer(usage_key, block, answer_field, user)
-		    blocks.append((getattr(block, question_field), answer))
+            blocks.append((getattr(block, question_field), answer))
                 except Exception as e:
                     logger.warn(str(e))
-	    user_blocks.append((user, blocks))
-	
-	all_answers = []
+        user_blocks.append((user, blocks))
+    
+    all_answers = []
 
-	for user, blocks in user_blocks:
+    for user, blocks in user_blocks:
             block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
             qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
             layout = self.string_html.replace('[[CONTENT]]', qa_str)
-	    all_answers.append((user, layout))
+        all_answers.append((user, layout))
 
         context_dict = {
             "recap_items": json.dumps(recap_items),
             "users": users,
             "recap_name": recap_items[0]['name'],
             "download_text": self.download_text,
-	    "layout": layout,
-	    "all_answers": all_answers
+        "layout": layout,
+        "all_answers": all_answers
         }
 
         instructor_dashboard_fragment = Fragment()
         instructor_dashboard_fragment.content = loader.render_django_template('static/html/recap_dashboard.html', context_dict)
-	instructor_dashboard_fragment.add_css(self.resource_string("static/css/recap.css"))
-	instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
+    instructor_dashboard_fragment.add_css(self.resource_string("static/css/recap.css"))
+    instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
         instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
         instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2canvas.min.js'))
         instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2pdf.js'))
