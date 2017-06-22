@@ -31,7 +31,6 @@ setup(
     install_requires=[
         'XBlock',
         'xblock-utils',
-        'xhtml2pdf'
     ],
     entry_points={
         'xblock.v1': [
