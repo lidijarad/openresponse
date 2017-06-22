@@ -19,7 +19,6 @@ from opaque_keys.edx.locations import BlockUsageLocator
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from submissions import api
-from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 import json
@@ -281,9 +280,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
-
-    
         user_blocks = []
+        
         for user in users:
                 blocks = []
                 for usage_key, xblock_type in self.get_blocks(self.xblock_list):
@@ -324,21 +322,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
 
         return instructor_dashboard_fragment
-  
-
-    def generate_PDF(self, data, request):
-        
-        data = data['recap_answers']
-        template = get_template('recap.html')
-        html  = template.render(Context(data))
-        file = open('test.pdf', "w+b")
-        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
-            encoding='utf-8')
-        file.seek(0)
-        pdf = file.read()
-        file.close()            
-        return HttpResponse(pdf, 'application/pdf')
-
 
     @staticmethod
     def workbench_scenarios():
