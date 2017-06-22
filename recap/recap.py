@@ -143,8 +143,25 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns value from Scope.user_state field in any xblock
         """
-        return get_user_answer(self, usage_key, block, field, block.runtime.get_real_user(self.runtime.anonymous_student_id))
-     
+        value = None
+        field_data = block.runtime.service(block, 'field-data')
+        if field_data.has(block, field):
+            value = field_data.get(block, field) # value = block.fields[field].from_json(value)
+        else:
+            descriptor = modulestore().get_item(usage_key, depth=1)
+            if block.runtime.get_real_user:
+                real_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
+                field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
+                    usage_key.course_key,
+                    real_user,
+                    descriptor,
+                    asides=XBlockAsidesConfig.possible_asides(),
+                )
+                student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
+                if student_data.has(block, field, real_user):
+                    value = student_data.get(block, field)
+        return value
+             
     def get_user_answer(self, usage_key, block, field, user):
         """
         Returns value from Scope.user_state field in any xblock
