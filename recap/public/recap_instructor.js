@@ -11,27 +11,26 @@
         // Try add pagination
 
         var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
-        var recordPerPage = 5;
+        var recordPerPage = 2;
         var totalPages = Math.ceil(totalRows / recordPerPage);
         var $pages = $('<div id="pages"></div>');
         for (i = 0; i < totalPages; i++) {
-            $('<span class="pageNumber">&nbsp;' + (i + 1) + '</span>').appendTo($pages);
+        $('<span class="pageNumber">&nbsp;' + (i + 1) + '</span>').appendTo($pages);
         }
-        
         $pages.appendTo('#recap-table');
 
         $('.pageNumber').hover(
-            function() {
-                $(this).addClass('focus');
-        },
-        
+         function() {
+          $(this).addClass('focus');
+         },
         function() {
-            $(this).removeClass('focus');
+        $(this).removeClass('focus');
         }
         );
 
-        $('table').find('tbody tr:has(td)').hide();
-        var tr = $('table tbody tr:has(td)');
+        $('#recap-table').find('tbody tr:has(td)').hide();
+        var tr = $('#recap-table').find('tbody tr:has(td)');
+        console.log(tr);
         for (var i = 0; i <= recordPerPage - 1; i++) {
           $(tr[i]).show();
         }
