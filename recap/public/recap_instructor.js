@@ -46,7 +46,8 @@
 
         $('.download_answer').click(function(event) {
             
-            var pdf_element = $(this).closest('td').prev('.ans').html();
+            var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
+            var pdf_element = document.getElementById(String(pdf_element_id)).innerHTML;
 
             html2pdf(pdf_element, {
               margin: [0.8, 1, 0.5, 1],
