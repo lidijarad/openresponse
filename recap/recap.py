@@ -282,23 +282,23 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         user_blocks = []
         
         for user in users:
-                blocks = []
-                for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-                    try:
-                        block = self.runtime.get_block(usage_key)
-                        question_field, answer_field = self.get_field_names(xblock_type)
-                        answer = self.get_user_answer(usage_key, block, answer_field, user)
-                blocks.append((getattr(block, question_field), answer))
-                    except Exception as e:
-                        logger.warn(str(e))
+            blocks = []
+            for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+                try:
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    answer = self.get_user_answer(usage_key, block, answer_field, user)
+                    blocks.append((getattr(block, question_field), answer))
+                except Exception as e:
+                    logger.warn(str(e))
             user_blocks.append((user, blocks))
     
         all_answers = []
 
         for user, blocks in user_blocks:
-                block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
-                qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
-                layout = self.string_html.replace('[[CONTENT]]', qa_str)
+            block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+            layout = self.string_html.replace('[[CONTENT]]', qa_str)
             all_answers.append((user, layout))
 
         context_dict = {
