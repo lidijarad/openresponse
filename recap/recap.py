@@ -701,30 +701,33 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 			(Fragment): The HTML Fragment for this XBlock.
 		"""
 
-		blocks = []
-		for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-			try:
-				block = self.runtime.get_block(usage_key)
-				question_field, answer_field = self.get_field_names(xblock_type)
-				answer = self.get_answer(usage_key, block, answer_field)
-				blocks.append((getattr(block, question_field), answer))
-			except Exception as e:
-				logger.warn(str(e))
-
-		block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
-		qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
-		layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
 		# Get the data passed from the instructor dashboard
 
 		recap_items = context.get('recap_items', []) if context else []
 		users = context.get('users', []) if context else []
-		
-		all_answers = []
-		
-		for user in users:
-			student_answer = self.get_user_answer(usage_key, block, answer_field, user)
-			all_answers.append(student_answer)
+
+        user_blocks = []
+        for user in users:
+            blocks = []
+            for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+                try:
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    answer = self.get_user_answer(usage_key, block, answer_field, user)
+                    blocks.append((getattr(block, question_field), answer))
+                except Exception as e:
+                    logger.warn(str(e))
+            user_blocks.append((user, blocks))
+
+        all_answers = []
+
+        for user, blocks in user_blocks:
+            block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+            layout = self.string_html.replace('[[CONTENT]]', qa_str)
+            all_answers.append((user, layout))
+
 
 		context_dict = {
 			"recap_items": json.dumps(recap_items),
