@@ -320,6 +320,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             layout = self.string_html.replace('[[CONTENT]]', qa_str)
             all_answers.append((user, layout))
 
+        pattern_used_in_wysiwyg = False
         user_blocksets = []
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
         
@@ -327,6 +328,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             block_sets = []
             current = 0
             for m in re.finditer(pattern, layout):
+                pattern_used_in_wysiwyg = True
                 subblocks = []
                 for x in range(current, current+int(m.group(1))):
                     if len(self.xblock_list) > x:
@@ -341,15 +343,16 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             user_blocksets.append((user, block_sets))
 
         layouts = {}
-        if len(user_blocksets) > 0:
+        if pattern_used_in_wysiwyg:
             all_answers = []
+            for user, block_sets in user_blocksets:
+                layout_copy = layout
+                for start, end, string in reversed(block_sets):
+                    layout_copy = layout_copy[0:start] + string + layout_copy[end:]
+                layouts[user] = layout_copy
+                all_answers.append((user, layouts[user]))
 
-        for user, block_sets in user_blocksets:
-            layout_copy = layout
-            for start, end, string in reversed(block_sets):
-                layout_copy = layout_copy[0:start] + string + layout_copy[end:]
-            layouts[user] = layout_copy
-            all_answers.append((user, layouts[user]))
+
 
         context_dict = {
             "recap_items": json.dumps(recap_items),
