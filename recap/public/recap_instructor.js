@@ -11,7 +11,7 @@
         // Try add pagination
 
         var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
-        var recordPerPage = 2;
+        var recordPerPage = 10;
         var totalPages = Math.ceil(totalRows / recordPerPage);
         var $pages = $('<div id="pages"></div>');
         for (i = 0; i < totalPages; i++) {
