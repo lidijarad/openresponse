@@ -1,0 +1,62 @@
+
+{% spaceless %}
+
+<style>
+.focus {
+  background-color: #ff00ff;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.pageNumber {
+  padding: 2px;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+
+<section class="recap-block">
+    <div class="recap-content">
+    </div>
+</section>
+
+<table id="recap-table">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th style="display:none">Preview</th>
+      <th>Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user, answer in all_answers %}
+      <tr>
+        <td>{{user.username }}</td>
+        <td>{{user.first_name }} {{user.last_name}}</td>
+        <td>{{user.email }}</td>
+        <td id="{{user.email}}"  class="ans" style="display:none">{% autoescape off %}{{answer}}{% endautoescape %}</td>
+        <td><input class='download_answer' id='user_{{user.id}}' type='button' value='{{download_text}}'></input></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endspaceless %}
