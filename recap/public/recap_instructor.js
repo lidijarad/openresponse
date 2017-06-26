@@ -13,7 +13,7 @@
         var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
         var recordPerPage = 10;
         var totalPages = Math.ceil(totalRows / recordPerPage);
-        var $pages = $('<div id="pages"></div>');
+        var $pages = $('<br/><div class="recap-page-wrapper" id="pages"></div>');
         for (i = 0; i < totalPages; i++) {
             $('<span class="pageNumber">&nbsp;' + (i + 1) + '</span>').appendTo($pages);
         }
@@ -34,7 +34,9 @@
         for (var i = 0; i <= recordPerPage - 1; i++) {
           $(tr[i]).show();
         }
-        $('span').click(function(event) {
+        $('.pageNumber').click(function(event) {
+          $('.recap-page-wrapper span').removeClass('active');
+          $(this).addClass('active');
           $('#recap-table').find('tbody tr:has(td)').hide();
             var nBegin = ($(this).text() - 1) * recordPerPage;
             var nEnd = $(this).text() * recordPerPage - 1;
@@ -42,6 +44,7 @@
               $(tr[i]).show();
             }
         });  
+ 
 
         $('.download_answer').click(function(event) {
             

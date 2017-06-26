@@ -36,7 +36,7 @@ tr:nth-child(even) {
     </div>
 </section>
 
-<table id="recap-table">
+<table id="recap-table" class='recap-tab'>
   <thead>
     <tr>
       <th>Username</th>
@@ -53,7 +53,7 @@ tr:nth-child(even) {
         <td>{{user.first_name }} {{user.last_name}}</td>
         <td>{{user.email }}</td>
         <td id="{{user.email}}"  class="ans" style="display:none">{% autoescape off %}{{answer}}{% endautoescape %}</td>
-        <td><input class='download_answer' id='user_{{user.id}}' type='button' value='{{download_text}}'></input></td>
+        <td><a class='download_answer' href="#">{{download_text}}</a</td>
       </tr>
     {% endfor %}
   </tbody>
