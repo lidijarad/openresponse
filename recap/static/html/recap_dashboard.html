@@ -20,7 +20,11 @@
                 <td>{{user.first_name }} {{user.last_name}}</td>
                 <td>{{user.email }}</td>
                 <td id="{{user.email}}"  class="ans" style="display:none">{% autoescape off %}{{answer}}{% endautoescape %}</td>
-                <td><a class='download_answer' href="#">{{download_text}}</a</td>
+                {% if 'Nothing to recap' in answer %}
+                    <td>Pending</td>
+                {% else %}
+                    <td><a class='download_answer' href="#">{{download_text}}</a</td>
+                {% endif %}
               </tr>
             {% endfor %}
           </tbody>
