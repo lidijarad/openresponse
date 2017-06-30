@@ -298,7 +298,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         recap_items = context.get('recap_items', []) if context else []
         user_blocks = []
         user_blocksets = []
-
+        all_answers = []
 
         number_of_blocks = len(self.xblock_list)
         # Need to take care of multiple xlocks and generalise code, too much copy pasting
@@ -315,7 +315,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     except Exception as e:
                         logger.warn(str(e))
                 user_blocks.append((user, blocks))
-            all_answers = []
+            
             for user, blocks in user_blocks:
                 block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
                 qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
