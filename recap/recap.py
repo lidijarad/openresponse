@@ -373,6 +373,11 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         return instructor_dashboard_fragment
 
+
+    def make_pdf(self, data, suffix=''):  # pylint: disable=unused-argument
+
+        return {'text': 'hi'}
+
     @staticmethod
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
