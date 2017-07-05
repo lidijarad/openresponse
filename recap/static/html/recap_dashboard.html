@@ -35,4 +35,24 @@
     {% endif %}
     </div>
 </section>
+
+<div>
+<form id="notifications-frm" action="${ section_data['make_pdf'] }" method="post">
+        <div>
+            <br>
+            <p>
+                ${_("Send course wide push notifications to all students registered for the course.")}
+            </p>
+        </div>
+        
+        </p>
+        <div>
+            <br>
+            <textarea  id="notifications-text" cols=50 rows=10 style="height:auto;"></textarea>
+        </div>
+        <div>
+            <input type="submit" id="notifications-btn" value="${_('Submit')}" class="text_button">
+        </div>
+        </form>
+</div>
 {% endspaceless %}
