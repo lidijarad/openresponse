@@ -22,11 +22,16 @@
                 <td>{{user.username }}</td>
                 <td>{{user.first_name }} {{user.last_name}}</td>
                 <td>{{user.email }}</td>
-                <td id="{{user.email}}"  class="ans" style="display:none">{% autoescape off %}{{answer}}{% endautoescape %}</td>
+                <td id="{{user.username}}"  class="ans" style="display:none"></td>
                 {% if 'Nothing to recap' in answer %}
                     <td>Pending</td>
                 {% else %}
-                    <td><a class='download_answer' href="#">{{download_text}}</a</td>
+                    <td>
+                      <a class='download_answer' href="#">{{download_text}}</a>
+                      <form class="recap-instructor-form" action="{{make_pdf}}" method="post">
+                        <input type="submit" class="recap-download-btn" value="{{Download}}">
+                      </form>
+                    </td>
                 {% endif %}
               </tr>
             {% endfor %}
@@ -37,22 +42,5 @@
 </section>
 
 <div>
-<form id="notifications-frm" action="${ section_data['make_pdf'] }" method="post">
-        <div>
-            <br>
-            <p>
-                ${_("Send course wide push notifications to all students registered for the course.")}
-            </p>
-        </div>
-        
-        </p>
-        <div>
-            <br>
-            <textarea  id="notifications-text" cols=50 rows=10 style="height:auto;"></textarea>
-        </div>
-        <div>
-            <input type="submit" id="notifications-btn" value="${_('Submit')}" class="text_button">
-        </div>
-        </form>
 </div>
 {% endspaceless %}

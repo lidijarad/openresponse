@@ -3,9 +3,6 @@
 (
     function RecapDashboard(runtime, element, data) {
         
-        window.XBlock = {
-            initializeBlock: function(el){}
-        };
 
         current_date = new Date();
         month = current_date.getMonth() + 1;
@@ -50,30 +47,12 @@
         });  
  
 
-        $('.test_function').on('click', function() {
-            var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
-            var pdf_element = document.getElementById(String(pdf_element_id)).innerHTML;
-            var pdf_name_user = pdf_name + '_' + String(pdf_element_id) + '.pdf'
-
-            $.ajax({    
-                url: "recap_handler_url",
-                type: "post",
-                data: {"pdf_element": pdf_element},
-                success: function(data) {
-    
-                    console.log(data);
-                    //fillTags();
-                }
-            });
-
-        });
-
-        $('#notifications-btn').click(function(event){
+        $('.recap-download-btn').click(function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
             console.log('I was clicked');
             var noteFormUrl;
-            noteFormUrl = $('#notifications-frm').attr('action');
+            noteFormUrl = $('.recap-instructor-form').attr('action');
             var csrftoken = getCookie('csrftoken');
             $.ajaxSetup({
         beforeSend: function(xhr, settings) {
@@ -85,7 +64,7 @@
             $.ajax({
                 url: noteFormUrl,
                 method: 'post',
-                data: {'text': note_text},
+                data: {'text': 'hi'},
                 beforeSend: function(xhr, settings) {
             if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
               xhr.setRequestHeader("X-CSRFToken", csrftoken);
