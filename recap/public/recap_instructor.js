@@ -52,6 +52,7 @@
             event.stopImmediatePropagation()
             console.log('I was clicked');
             var noteFormUrl;
+            var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
             var csrftoken = getCookie('csrftoken');
             $.ajaxSetup({
@@ -64,7 +65,7 @@
             $.ajax({
                 url: noteFormUrl,
                 method: 'post',
-                data: {'text': 'hi'},
+                data: {'user_id': pdf_element_id},
                 beforeSend: function(xhr, settings) {
             if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
               xhr.setRequestHeader("X-CSRFToken", csrftoken);

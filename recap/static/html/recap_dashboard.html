@@ -22,7 +22,7 @@
                 <td>{{user.username }}</td>
                 <td>{{user.first_name }} {{user.last_name}}</td>
                 <td>{{user.email }}</td>
-                <td id="{{user.username}}"  class="ans" style="display:none"></td>
+                <td id="{{user.username}}"  class="ans" style="display:none">{{answer}}</td>
                 {% if 'Nothing to recap' in answer %}
                     <td>Pending</td>
                 {% else %}
