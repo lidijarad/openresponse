@@ -54,58 +54,25 @@
             var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
-            var csrftoken = getCookie('csrftoken');
-            $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-              xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-            }
-            });
+            console.log("ELEMENT", pdf_element_id)
             $.ajax({
                 url: noteFormUrl,
-                method: 'post',
-                data: {'user_id': pdf_element_id},
-                beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-              xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-            }
-            }).done(function(data){
-                var message = $('#note-msg')
-                if (data.hasOwnProperty('error')){
-                    message.append("There was an error.")
-                } 
-                else if (data.hasOwnProperty('statusCode')){
-                    if (data['statusCode'] == 200) {
-                        alert('The notification was sent.')
-                        message.append(note_text)
-                    }
-                } else if (data['statusCode'] != 200) {
-                    alert('There was a problem and the notification was not sent.')
-                    message.append(data.message)
+                method: 'POST',
+                data: JSON.stringify({ 'user_id': pdf_element_id}) ,
+                success: function(data) {
+                    console.log("SUCCESS");
+                    console.log(data);
+                    pdf_element = data['html'];
+                    html2pdf(pdf_element, {
+                    margin: [0.8, 1, 0.5, 1],
+                    filename: 'new_async_pdf.pdf',
+                    image: { type: 'jpeg',quality: 0.98 },
+                    html2canvas: { dpi: 192, letterRendering: true },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                  }, function(pdf) {})
                 }
-            })
+            });
         });
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
 
         $('.download_answer').click(function(event) {
             
