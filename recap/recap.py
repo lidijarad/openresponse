@@ -176,7 +176,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             descriptor = modulestore().get_item(usage_key, depth=1)
             if block.runtime.get_real_user:
                 real_user = user
-                print "ASIDES" XBlockAsidesConfig.possible_asides()
                 field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
                     usage_key.course_key,
                     real_user,
@@ -205,28 +204,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             except Exception as e:
                 logger.warn(str(e))
 
-        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
-        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
-        layout = self.string_html.replace('[[CONTENT]]', qa_str)
-
-        current = 0
-        block_sets = []
-        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-        for m in re.finditer(pattern, layout):
-            subblocks = []
-            for x in range(current, current+int(m.group(1))):
-                if len(self.xblock_list) > x:
-                    usage_key, xblock_type = self.get_block(self.xblock_list[x])
-                    block = self.runtime.get_block(usage_key)
-                    question_field, answer_field = self.get_field_names(xblock_type)
-                    answer = self.get_answer(usage_key, block, answer_field)
-                    subblocks.append((getattr(block, question_field), answer))
-                    current += 1
-            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
-            block_sets.append((m.start(0), m.end(0), qa_str))
-
-        for start, end, string in reversed(block_sets):
-            layout = layout[0:start] + string + layout[end:]
+        layout = self.get_user_layout(blocks)
 
         idArray = self.scope_ids.usage_id._to_string().split('@')
         xblockId = idArray[len(idArray) -1]
@@ -270,10 +248,33 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
     def get_user_layout(self, blocks):
         layout = ''
+
         for block in blocks:
             block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>' 
             qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
             layout = self.string_html.replace('[[CONTENT]]', qa_str)
+
+        # deal with multiple blocks
+
+        current = 0
+        block_sets = []
+        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
+        for m in re.finditer(pattern, layout):
+            subblocks = []
+            for x in range(current, current+int(m.group(1))):
+                if len(self.xblock_list) > x:
+                    usage_key, xblock_type = self.get_block(self.xblock_list[x])
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    answer = self.get_answer(usage_key, block, answer_field)
+                    subblocks.append((getattr(block, question_field), answer))
+                    current += 1
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+            block_sets.append((m.start(0), m.end(0), qa_str))
+
+        for start, end, string in reversed(block_sets):
+            layout = layout[0:start] + string + layout[end:]
+
         return layout
 
     def studio_view(self, context):
@@ -349,6 +350,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         This uses the python xhtml2pdf library to create a pdf
         '''
 
+        # This is not complete yet, do not know how to extract user from data
         user = User.objects.get(username='staff')
         blocks = self.get_blocks_list(user)
         html = self.get_user_layout(blocks)
@@ -367,7 +369,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     def make_pdf_json(self, data, suffix=''):
 
         '''
-        This is a XBlock.
+        This is a XBlock json handler 
         '''
 
         user = User.objects.get(id=data['user_id'])

@@ -3,13 +3,14 @@
 (
     function RecapDashboard(runtime, element, data) {
         
+        // Get the date for the pdf file name
 
         current_date = new Date();
         month = current_date.getMonth() + 1;
         pdf_name = ''
         pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
 
-        // Try add pagination
+        // Paginate users using jquery
 
         var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
         var recordPerPage = 10;
@@ -46,11 +47,11 @@
             }
         });  
  
+        // Download pdf asynchronously using html2pdf library
 
         $('.recap-download-btn').click(function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
-            console.log('I was clicked');
             var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
@@ -74,22 +75,6 @@
                   }, function(pdf) {})
                 }
             });
-        });
-
-
-        $('.download_answer').click(function(event) {
-            
-            var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
-            var pdf_element = document.getElementById(String(pdf_element_id)).innerHTML;
-            var pdf_name_user = pdf_name + '_' + String(pdf_element_id) + '.pdf'
-
-            html2pdf(pdf_element, {
-              margin: [0.8, 1, 0.5, 1],
-              filename: pdf_name_user,
-              image: { type: 'jpeg',quality: 0.98 },
-              html2canvas: { dpi: 192, letterRendering: true },
-              jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            }, function(pdf) {});
         });
     }
 )
