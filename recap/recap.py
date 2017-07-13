@@ -326,7 +326,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             "download_text": self.download_text,
             "all_answers": all_answers,
             "number_of_blocks": number_of_blocks,
-            "make_pdf": recap_items[0]['make_pdf'],
             "make_pdf_json": recap_items[0]['make_pdf_json']
         }
 

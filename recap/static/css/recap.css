@@ -16,6 +16,7 @@
     border: 1px solid #ddd;
 }
 
+
 .active {
     background-color: #d9d9d9;
     color: black;
@@ -26,6 +27,7 @@
   border-collapse: collapse;
   width: 100%;
 }
+
 
 table.recap-tab td,
 table.recap-tab th {
@@ -53,20 +55,3 @@ table.recap-tab tr:nth-child(even) {
   margin-top: 20px;
 }
 
-@media print {
-    .recap_answer {
-        border-left: none;
-    }
-}
-
-.recap-download-btn {
-  background-color: transparent;
-  text-decoration: underline;
-  border: none;
-  color: blue;
-  cursor: pointer;
-}
-
-.recap-download-btn:focus {
-  outline: none;
-}
