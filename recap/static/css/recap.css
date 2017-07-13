@@ -59,3 +59,14 @@ table.recap-tab tr:nth-child(even) {
     }
 }
 
+.recap-download-btn {
+  background-color: transparent;
+  text-decoration: underline;
+  border: none;
+  color: blue;
+  cursor: pointer;
+}
+
+.recap-download-btn:focus {
+  outline: none;
+}

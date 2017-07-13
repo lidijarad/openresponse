@@ -4,6 +4,7 @@ import re
 import logging
 import pkg_resources
 from xblock.core import XBlock
+from django.contrib.auth.models import User
 from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
 from xblock.fragment import Fragment
 from xblock.runtime import KvsFieldData, KeyValueStore
@@ -175,6 +176,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             descriptor = modulestore().get_item(usage_key, depth=1)
             if block.runtime.get_real_user:
                 real_user = user
+                print "ASIDES" XBlockAsidesConfig.possible_asides()
                 field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
                     usage_key.course_key,
                     real_user,
@@ -324,6 +326,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         # Need to take care of multiple xlocks and generalise code, too much copy pasting
         if number_of_blocks == 1:
             for user in users:
+                print "USER TYPE", type(user)
                 blocks = []
                 for usage_key, xblock_type in self.get_blocks(self.xblock_list):
                     try:
@@ -334,7 +337,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     except Exception as e:
                         logger.warn(str(e))
                 user_blocks.append((user, blocks))
-            
+
             for user, blocks in user_blocks:
                 block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
                 qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
@@ -364,29 +367,21 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             if pattern_used_in_wysiwyg:
                 all_answers = []
                 for user, block_sets in user_blocksets:
-                    layout_copy = layout
+                    Httlayout_copy = layout
                     for start, end, string in reversed(block_sets):
                         layout_copy = layout_copy[0:start] + string + layout_copy[end:]
                     layouts[user] = layout_copy
                     all_answers.append((user, layouts[user]))
 
-
+        print "ANSWERSSSSS", all_answers
 
         context_dict = {
             "users": users,
             "download_text": self.download_text,
             "all_answers": all_answers,
             "number_of_blocks": number_of_blocks,
-
-        }
-
-
-        context_dict = {
-            "users": users,
-            "download_text": self.download_text,
-            "number_of_blocks": number_of_blocks,
-            "make_pdf": recap_items[0]['make_pdf']
-
+            "make_pdf": recap_items[0]['make_pdf'],
+            "make_pdf_json": recap_items[0]['make_pdf_json']
         }
 
         instructor_dashboard_fragment = Fragment()
@@ -401,19 +396,36 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         return instructor_dashboard_fragment
 
-    @XBlock.json_handler
-    def make_pdf(self, data, request):     
-               
-        user = data['user_id']      
+
+    @XBlock.handler
+    def make_pdf(self, data, suffix=''):
+
+        user = User.objects.get(username='staff')
         blocks = self.get_blocks_list(user)
-        html = self.get_user_layout(blocks)       
-        file = open('test.pdf', "w+b")        
-        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,      
-            encoding='utf-8')     
-        file.seek(0)      
-        pdf = file.read()     
-        file.close()                  
-        return HttpResponse(pdf, 'application/pdf')
+        html = self.get_user_layout(blocks)
+        file = open(os.path.join(settings.MEDIA_ROOT, 'test.pdf'), "w+b")
+        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
+            encoding='utf-8')
+        file.seek(0)
+        pdf = file.read()
+        file.close()
+        resp = webob.Response()
+        resp.content_type = 'application/pdf'
+        resp.body = pdf
+        return resp
+
+    @XBlock.json_handler
+    def make_pdf_json(self, data, suffix=''):
+
+        user = User.objects.get(id=data['user_id'])
+        blocks = self.get_blocks_list(user)
+        html = self.get_user_layout(blocks)
+
+        return {'html': html, 'user_name': user.username}
+
+
+
+
 
     @staticmethod
     def workbench_scenarios():

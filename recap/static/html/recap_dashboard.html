@@ -1,5 +1,25 @@
-
 {% spaceless %}
+
+<style type="text/css">
+.recap-loader {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    display: none;
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 
 <section class="recap-block">
     <div class="recap-content">
@@ -22,14 +42,13 @@
                 <td>{{user.username }}</td>
                 <td>{{user.first_name }} {{user.last_name}}</td>
                 <td>{{user.email }}</td>
-                <td id="{{user.username}}"  class="ans" style="display:none">{{answer}}</td>
+                 <td id="{{user.id}}"  class="ans" style="display:none">{% autoescape off %}{% endautoescape %}</td>
                 {% if 'Nothing to recap' in answer %}
                     <td>Pending</td>
                 {% else %}
                     <td>
-                      <a class='download_answer' href="#">{{download_text}}</a>
-                      <form class="recap-instructor-form" action="{{make_pdf}}" method="post">
-                        <input type="submit" class="recap-download-btn" value="{{Download}}">
+                     <form class="recap-instructor-form" action="{{make_pdf_json}}" method="post">
+                         <a class="recap-download-btn">{{download_text}}</a>
                       </form>
                     </td>
                 {% endif %}
@@ -41,6 +60,8 @@
     </div>
 </section>
 
+<div class='recap-loader' tabindex="1000" role="dialog"></div>
+ <div id="lean_overlay" style="display: block; opacity: 1; display:none; z-index:3;"></div>
 <div>
 </div>
 {% endspaceless %}

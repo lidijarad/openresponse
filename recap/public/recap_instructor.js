@@ -54,18 +54,20 @@
             var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
-            console.log("ELEMENT", pdf_element_id)
+            $('#lean_overlay').fadeToggle();
+            $('.recap-loader').show();
             $.ajax({
                 url: noteFormUrl,
                 method: 'POST',
                 data: JSON.stringify({ 'user_id': pdf_element_id}) ,
                 success: function(data) {
-                    console.log("SUCCESS");
-                    console.log(data);
+                    $('.recap-loader').hide();
+                    $('#lean_overlay').fadeToggle();
                     pdf_element = data['html'];
+                    file_name = pdf_name + '_' + String(data['user_name']) + '.pdf'
                     html2pdf(pdf_element, {
                     margin: [0.8, 1, 0.5, 1],
-                    filename: 'new_async_pdf.pdf',
+                    filename: file_name,
                     image: { type: 'jpeg',quality: 0.98 },
                     html2canvas: { dpi: 192, letterRendering: true },
                     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -73,6 +75,7 @@
                 }
             });
         });
+
 
         $('.download_answer').click(function(event) {
             
