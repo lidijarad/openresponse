@@ -324,8 +324,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         context_dict = {
             "users": users,
             "download_text": self.download_text,
-            "all_answers": all_answers,
-            "number_of_blocks": number_of_blocks,
             "make_pdf_json": recap_items[0]['make_pdf_json']
         }
 
@@ -368,7 +366,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     def make_pdf_json(self, data, suffix=''):
 
         '''
-        This is a XBlock json handler 
+        This is a XBlock json handler for the async pdf download
         '''
 
         user = User.objects.get(id=data['user_id'])
@@ -376,10 +374,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         html = self.get_user_layout(blocks)
 
         return {'html': html, 'user_name': user.username}
-
-
-
-
 
     @staticmethod
     def workbench_scenarios():

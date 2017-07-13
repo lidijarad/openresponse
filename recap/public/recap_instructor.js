@@ -65,14 +65,18 @@
                     $('.recap-loader').hide();
                     $('#lean_overlay').fadeToggle();
                     pdf_element = data['html'];
-                    file_name = pdf_name + '_' + String(data['user_name']) + '.pdf'
-                    html2pdf(pdf_element, {
-                    margin: [0.8, 1, 0.5, 1],
-                    filename: file_name,
-                    image: { type: 'jpeg',quality: 0.98 },
-                    html2canvas: { dpi: 192, letterRendering: true },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                  }, function(pdf) {})
+
+                    if (pdf_element.indexOf('Nothing to recap') !== -1) {
+                        alert("The user has not submitted all their answers.")
+                    } else {
+                        file_name = pdf_name + '_' + String(data['user_name']) + '.pdf'
+                        html2pdf(pdf_element, {
+                            margin: [0.8, 1, 0.5, 1],
+                            filename: file_name,
+                            image: { type: 'jpeg',quality: 0.98 },
+                            html2canvas: { dpi: 192, letterRendering: true },
+                            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                       }, function(pdf) {})
                 }
             });
         });
