@@ -198,13 +198,16 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
                 block = self.runtime.get_block(usage_key)
+                real_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
                 question_field, answer_field = self.get_field_names(xblock_type)
                 answer = self.get_answer(usage_key, block, answer_field)
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
                 logger.warn(str(e))
 
-        layout = self.get_user_layout(blocks)
+
+
+        layout = self.get_user_layout(blocks, real_user)
 
         idArray = self.scope_ids.usage_id._to_string().split('@')
         xblockId = idArray[len(idArray) -1]
@@ -246,7 +249,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 logger.warn(str(e))
         return blocks
 
-    def get_user_layout(self, blocks):
+    def get_user_layout(self, blocks, user):
         layout = ''
 
         for block in blocks:
@@ -373,7 +376,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         user = User.objects.get(id=data['user_id'])
         blocks = self.get_blocks_list(user)
-        html = self.get_user_layout(blocks)
+        html = self.get_user_layout(blocks, user)
 
         return {'html': html, 'user_name': user.username}
 
