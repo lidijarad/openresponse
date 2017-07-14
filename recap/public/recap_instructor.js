@@ -53,7 +53,6 @@
             event.preventDefault();
             event.stopImmediatePropagation()
             var noteFormUrl;
-            console.log('click')
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
             $('#lean_overlay').fadeToggle();
@@ -66,7 +65,6 @@
                     $('.recap-loader').hide();
                     $('#lean_overlay').fadeToggle();
                     pdf_element = data['html'];
-                    console.log('html', pdf_element);
                     if (pdf_element.indexOf('Nothing to recap') !== -1) {
                         alert("The user has not submitted all their answers.")
                     } else {
