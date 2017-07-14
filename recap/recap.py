@@ -268,6 +268,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         return blocks
 
     def get_user_layout(self, blocks, user):
+        
         layout = ''
 
         for block in blocks:
