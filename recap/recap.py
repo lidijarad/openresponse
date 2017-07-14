@@ -198,16 +198,34 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
                 block = self.runtime.get_block(usage_key)
-                real_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
                 question_field, answer_field = self.get_field_names(xblock_type)
                 answer = self.get_answer(usage_key, block, answer_field)
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
                 logger.warn(str(e))
 
+        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
+        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+        layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
+        current = 0
+        block_sets = []
+        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
+        for m in re.finditer(pattern, layout):
+            subblocks = []
+            for x in range(current, current+int(m.group(1))):
+                if len(self.xblock_list) > x:
+                    usage_key, xblock_type = self.get_block(self.xblock_list[x])
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    answer = self.get_answer(usage_key, block, answer_field)
+                    subblocks.append((getattr(block, question_field), answer))
+                    current += 1
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+            block_sets.append((m.start(0), m.end(0), qa_str))
 
-        layout = self.get_user_layout(blocks, real_user)
+        for start, end, string in reversed(block_sets):
+            layout = layout[0:start] + string + layout[end:]
 
         idArray = self.scope_ids.usage_id._to_string().split('@')
         xblockId = idArray[len(idArray) -1]
