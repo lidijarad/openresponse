@@ -266,7 +266,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     usage_key, xblock_type = self.get_block(self.xblock_list[x])
                     block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
-                    answer = self.get_answer(usage_key, block, answer_field)
+                    answer = self.get_user_answer(usage_key, block, answer_field, user)
                     subblocks.append((getattr(block, question_field), answer))
                     current += 1
             qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
@@ -320,6 +320,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
         number_of_blocks = len(self.xblock_list)
+
+
 
         context_dict = {
             "users": users,
