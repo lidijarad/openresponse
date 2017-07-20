@@ -54,7 +54,7 @@
                 $('.recap-loader').show('fast', 'linear', function() { cb()});
            } else {
                 $('#lean_overlay').hide();
-                $('.recap-loader').hide('fast', 'linear',  function() { cb()});
+                $('.recap-loader').hide('fast', 'linear', function() { cb()});
             }
         }
  
@@ -73,8 +73,6 @@
                     method: 'POST',
                     data: JSON.stringify({ 'user_id': pdf_element_id}) ,
                     success: function(data) {
-                        $('.recap-loader').hide();
-                        $('#lean_overlay').fadeToggle();
                         pdf_element = data['html'];
                         if (pdf_element.indexOf('Nothing to recap') !== -1) {
                             SpinnerCallback(false, function() {
