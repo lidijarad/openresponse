@@ -4,6 +4,7 @@ import re
 import logging
 import pkg_resources
 from xblock.core import XBlock
+from django.contrib.auth.models import User
 from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
 from xblock.fragment import Fragment
 from xblock.runtime import KvsFieldData, KeyValueStore
@@ -18,6 +19,7 @@ from opaque_keys.edx.locations import BlockUsageLocator
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from submissions import api
+from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 import json
@@ -253,6 +255,47 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         return frag
 
+    def get_blocks_list(self, user):
+        blocks = []
+        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+            try:
+                block = self.runtime.get_block(usage_key)
+                question_field, answer_field = self.get_field_names(xblock_type)
+                answer = self.get_user_answer(usage_key, block, answer_field, user)
+                blocks.append((getattr(block, question_field), answer))
+            except Exception as e:
+                logger.warn(str(e))
+        return blocks
+
+    def get_user_layout(self, blocks, user):
+        
+        layout = ''
+        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>' 
+        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+        layout = self.string_html.replace('[[CONTENT]]', qa_str)
+
+        # deal with multiple blocks
+
+        current = 0
+        block_sets = []
+        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
+        for m in re.finditer(pattern, layout):
+            subblocks = []
+            for x in range(current, current+int(m.group(1))):
+                if len(self.xblock_list) > x:
+                    usage_key, xblock_type = self.get_block(self.xblock_list[x])
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    answer = self.get_user_answer(usage_key, block, answer_field, user)
+                    subblocks.append((getattr(block, question_field), answer))
+                    current += 1
+            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+            block_sets.append((m.start(0), m.end(0), qa_str))
+
+        for start, end, string in reversed(block_sets):
+            layout = layout[0:start] + string + layout[end:]
+
+        return layout
 
     def studio_view(self, context):
         """
@@ -296,69 +339,14 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
-        user_blocks = []
-        user_blocksets = []
-        all_answers = []
-
         number_of_blocks = len(self.xblock_list)
-        # Need to take care of multiple xlocks and generalise code, too much copy pasting
-
-        if number_of_blocks == 1:
-            for user in users:
-                blocks = []
-                for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-                    try:
-                        block = self.runtime.get_block(usage_key)
-                        question_field, answer_field = self.get_field_names(xblock_type)
-                        answer = self.get_user_answer(usage_key, block, answer_field, user)
-                        blocks.append((getattr(block, question_field), answer))
-                    except Exception as e:
-                        logger.warn(str(e))
-                user_blocks.append((user, blocks))
-            
-            for user, blocks in user_blocks:
-                block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
-                qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
-                layout = self.string_html.replace('[[CONTENT]]', qa_str)
-                all_answers.append((user, layout))
-            pattern_used_in_wysiwyg = False
-            user_blocksets = []
-            pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-            for user in users:
-                block_sets = []
-                current = 0
-                for m in re.finditer(pattern, layout):
-                    pattern_used_in_wysiwyg = True
-                    subblocks = []
-                    for x in range(current, current+int(m.group(1))):
-                        if len(self.xblock_list) > x:
-                            usage_key, xblock_type = self.get_block(self.xblock_list[x])
-                            block = self.runtime.get_block(usage_key)
-                            question_field, answer_field = self.get_field_names(xblock_type)
-                            answer = self.get_user_answer(usage_key, block, answer_field, user)
-                            subblocks.append((getattr(block, question_field), answer))
-                            current += 1
-                    qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
-                    block_sets.append((m.start(0), m.end(0), qa_str))
-                user_blocksets.append((user, block_sets))
-            layouts = {}
-            if pattern_used_in_wysiwyg:
-                all_answers = []
-                for user, block_sets in user_blocksets:
-                    layout_copy = layout
-                    for start, end, string in reversed(block_sets):
-                        layout_copy = layout_copy[0:start] + string + layout_copy[end:]
-                    layouts[user] = layout_copy
-                    all_answers.append((user, layouts[user]))
 
 
 
         context_dict = {
             "users": users,
             "download_text": self.download_text,
-            "all_answers": all_answers,
-            "number_of_blocks": number_of_blocks,
-
+            "make_pdf_json": recap_items[0]['make_pdf_json']
         }
 
         instructor_dashboard_fragment = Fragment()
@@ -372,6 +360,42 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
 
         return instructor_dashboard_fragment
+
+
+    @XBlock.handler
+    def make_pdf(self, data, suffix=''):
+
+        '''
+        This uses the python xhtml2pdf library to create a pdf
+        '''
+
+        # This is not complete yet, do not know how to extract user from data
+        user = User.objects.get(username='staff')
+        blocks = self.get_blocks_list(user)
+        html = self.get_user_layout(blocks)
+        file = open( 'test.pdf', "w+b")
+        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
+            encoding='utf-8')
+        file.seek(0)
+        pdf = file.read()
+        file.close()
+        resp = webob.Response()
+        resp.content_type = 'application/pdf'
+        resp.body = pdf
+        return resp
+
+    @XBlock.json_handler
+    def make_pdf_json(self, data, suffix=''):
+
+        '''
+        This is a XBlock json handler for the async pdf download
+        '''
+
+        user = User.objects.get(id=data['user_id'])
+        blocks = self.get_blocks_list(user)
+        html = self.get_user_layout(blocks, user)
+
+        return {'html': html, 'user_name': user.username}
 
     @staticmethod
     def workbench_scenarios():

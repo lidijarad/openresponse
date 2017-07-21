@@ -12,7 +12,9 @@ function RecapXBlock(runtime, element, data) {
 
 		$(recap_cmd).click(function() {
 
-     var pdf_element = document.getElementById(String(data.recap_answers_id)).innerHTML;
+     	var pdf_element = document.getElementById(String(data.recap_answers_id)).innerHTML;
+     	$('#lean_overlay').show();
+     	$('.recap-loader').show();
 
 			html2pdf(pdf_element, {
 			  margin: [0.8, 1, 0.5, 1],
@@ -20,7 +22,10 @@ function RecapXBlock(runtime, element, data) {
 			  image: { type: 'jpeg',quality: 0.98 },
 			  html2canvas: { dpi: 192, letterRendering: true },
 			  jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-			}, function(pdf) {});
+			}, function(pdf) {
+				$('.recap-loader').hide();
+        $('#lean_overlay').hide();
+			});
 		});
 	});
 }

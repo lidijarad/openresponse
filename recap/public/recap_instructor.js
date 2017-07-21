@@ -3,12 +3,14 @@
 (
     function RecapDashboard(runtime, element, data) {
         
+        // Get the date for the pdf file name
+
         current_date = new Date();
         month = current_date.getMonth() + 1;
         pdf_name = ''
         pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
 
-        // Try add pagination
+        // Paginate users using jquery
 
         var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
         var recordPerPage = 10;
@@ -44,21 +46,53 @@
               $(tr[i]).show();
             }
         });  
+
+        // Callback for showing and hiding spinner
+        function SpinnerCallback(shouldShowSpinner, cb) {
+           if (shouldShowSpinner) {
+                $('#lean_overlay').show();
+                $('.recap-loader').show('fast', 'linear', function() { cb()});
+           } else {
+                $('#lean_overlay').hide();
+                $('.recap-loader').hide('fast', 'linear', function() { cb()});
+            }
+        }
  
+        // Download pdf asynchronously using html2pdf library
 
-        $('.download_answer').click(function(event) {
-            
+        $('.recap-download-btn').click(function(event){
+            event.preventDefault();
+            event.stopImmediatePropagation()
+            var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
-            var pdf_element = document.getElementById(String(pdf_element_id)).innerHTML;
-            var pdf_name_user = pdf_name + '_' + String(pdf_element_id) + '.pdf'
+            noteFormUrl = $('.recap-instructor-form').attr('action');
+            SpinnerCallback(true, function() {
 
-            html2pdf(pdf_element, {
-              margin: [0.8, 1, 0.5, 1],
-              filename: pdf_name_user,
-              image: { type: 'jpeg',quality: 0.98 },
-              html2canvas: { dpi: 192, letterRendering: true },
-              jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            }, function(pdf) {});
+                $.ajax({
+                    url: noteFormUrl,
+                    method: 'POST',
+                    data: JSON.stringify({ 'user_id': pdf_element_id}) ,
+                    success: function(data) {
+                        pdf_element = data['html'];
+                        if (pdf_element.indexOf('Nothing to recap') !== -1) {
+                            SpinnerCallback(false, function() {
+                                alert("The user has not submitted all their answers.")
+                            });
+                        } else {
+                            file_name = pdf_name + '_' + String(data['user_name']) + '.pdf'
+                            html2pdf(pdf_element, {
+                                margin: [0.8, 1, 0.5, 1],
+                                filename: file_name,
+                                image: { type: 'jpeg',quality: 0.98 },
+                                html2canvas: { dpi: 192, letterRendering: true },
+                                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                           }, function(pdf) {
+                               SpinnerCallback(false, function () {});
+                           })
+                        }
+                    }
+                });
+            });
         });
     }
 )
