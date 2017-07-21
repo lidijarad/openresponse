@@ -270,11 +270,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     def get_user_layout(self, blocks, user):
         
         layout = ''
-
-        for block in blocks:
-            block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>' 
-            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
-            layout = self.string_html.replace('[[CONTENT]]', qa_str)
+        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>' 
+        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+        layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
         # deal with multiple blocks
 
