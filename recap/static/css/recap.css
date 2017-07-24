@@ -17,6 +17,29 @@
     100% { transform: rotate(360deg); }
 }
 
+
+.recap-nav-ul {
+    list-style: none;
+    border-bottom: 2px solid #dddddd;
+    border-top: 2px solid #dddddd;
+    line-height:2.5em;
+}
+
+.recap-nav-li {
+    display: inline-block;
+    vertical-align:top;
+/*    padding: 0 1.5em;*/
+/*    border-left: 2px solid #dddddd;*/
+}
+
+.recap-nav-li:nth-child(n+2) {
+    float:right;
+}
+
+#search {
+    padding:0 4px;
+}
+
 .recap-page-wrapper {
     text-align:center;
 }
