@@ -9,8 +9,9 @@
             </li>
             <li class="recap-nav-li">
                 <select>
-                    <option id="">{{block_list[0]}}</option>
-                    <option id="">{{block_list}}</option>
+                    {% for item in some_list %}
+                        <option id="">{{item}}</option>
+                    {% endfor %}
                 </select>
             </li>
         </ul>

@@ -342,13 +342,15 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         recap_items = context.get('recap_items', []) if context else []
         number_of_blocks = len(self.xblock_list)
 
-
+        some_list = [] 
+        for i in recap_items:
+            some_list.append(recap_items[i]['block_list'])
 
         context_dict = {
             "users": users,
             "download_text": self.download_text,
             "make_pdf_json": recap_items[0]['make_pdf_json'],
-            "block_list": recap_items[0]['block_list']
+            'some_list': some_list
         }
 
         instructor_dashboard_fragment = Fragment()
