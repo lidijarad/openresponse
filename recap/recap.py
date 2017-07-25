@@ -23,6 +23,7 @@ from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 import json
+import ast
 
 @XBlock.needs("field-data")
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
@@ -339,7 +340,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
-
         number_of_blocks = len(self.xblock_list)
 
 
@@ -392,13 +392,13 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         '''
         This is a XBlock json handler for the async pdf download
         '''
-
         user = User.objects.get(id=data['user_id'])
-        which_block = data['recap_block_id']
-        blocks = self.get_blocks_list(user)
+        which_blocks = ast.literal_eval(data['these_blocks'])
+        blocks = self.get_blocks_list(user, which_blocks)
         html = self.get_user_layout(blocks, user)
 
         return {'html': html, 'user_name': user.username}
+
 
     @staticmethod
     def workbench_scenarios():

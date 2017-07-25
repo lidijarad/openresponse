@@ -77,15 +77,20 @@
         $('.recap-download-btn').click(function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
+            var selected = $('#recap-options option:selected');
+            var selected_id = selected.val();
             var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
+            var my_data = { 'user_id': pdf_element_id, 'these_blocks': selected_id}
+            console.log(JSON.stringify(my_data));
+
             SpinnerCallback(true, function() {
 
                 $.ajax({
                     url: noteFormUrl,
                     method: 'POST',
-                    data: JSON.stringify({ 'user_id': pdf_element_id}) ,
+                    data: JSON.stringify(my_data),
                     success: function(data) {
                         pdf_element = data['html'];
                         if (pdf_element.indexOf('Nothing to recap') !== -1) {
