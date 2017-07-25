@@ -255,9 +255,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         return frag
 
-    def get_blocks_list(self, user):
+    def get_blocks_list(self, user, block_list):
         blocks = []
-        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+        for usage_key, xblock_type in self.get_blocks(block_list):
             try:
                 block = self.runtime.get_block(usage_key)
                 question_field, answer_field = self.get_field_names(xblock_type)
@@ -339,6 +339,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
+
         number_of_blocks = len(self.xblock_list)
 
 
@@ -346,7 +347,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         context_dict = {
             "users": users,
             "download_text": self.download_text,
-            "make_pdf_json": recap_items[0]['make_pdf_json']
+            "make_pdf_json": recap_items[0]['make_pdf_json'],
+            "block_list": recap_items[0]['block_list']
         }
 
         instructor_dashboard_fragment = Fragment()
@@ -392,6 +394,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         '''
 
         user = User.objects.get(id=data['user_id'])
+        which_block = data['recap_block_id']
         blocks = self.get_blocks_list(user)
         html = self.get_user_layout(blocks, user)
 
