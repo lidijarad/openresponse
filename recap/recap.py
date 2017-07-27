@@ -344,7 +344,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         number_of_blocks = len(self.xblock_list)
 
         recap_name_list = [] 
-        for i in recap_items:
+        for i in range(len(recap_items)):
             recap_name_list.append(recap_items[i]['name'], recap_items[i]['block_list'])
 
         context_dict = {
