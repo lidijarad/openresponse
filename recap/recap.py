@@ -1,6 +1,8 @@
 """TO-DO: Write a description of what this XBlock is."""
 # -*- coding: utf-8 -*-
 import re
+import json
+import ast
 import logging
 import pkg_resources
 from xblock.core import XBlock
@@ -22,8 +24,7 @@ from submissions import api
 from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
-import json
-import ast
+
 
 @XBlock.needs("field-data")
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
@@ -378,9 +379,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         user = User.objects.get(username='staff')
         blocks = self.get_blocks_list(user)
         html = self.get_user_layout(blocks)
-        file = open( 'test.pdf', "w+b")
-        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
-            encoding='utf-8')
+        file = open('test.pdf', "w+b")
+        pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=file, encoding='utf-8')
         file.seek(0)
         pdf = file.read()
         file.close()
