@@ -25,7 +25,6 @@ from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 
-
 @XBlock.needs("field-data")
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     """
