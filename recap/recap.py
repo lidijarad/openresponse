@@ -346,7 +346,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         recap_name_list = [] 
         for i in range(len(recap_items)):
-            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list'])
+            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
 
         context_dict = {
             "users": users,
