@@ -78,7 +78,7 @@
             event.preventDefault();
             event.stopImmediatePropagation()
             var selected = $('#recap-options option:selected');
-            var selected_id = selected.val();
+            var selected_id = selected.attr('id');
             var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
