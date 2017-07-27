@@ -17,11 +17,15 @@
     100% { transform: rotate(360deg); }
 }
 
+input.recap-search {
+   padding: 3px;
+    
+}
 
 .recap-nav-ul {
     list-style: none;
     border-bottom: 2px solid #dddddd;
-    border-top: 2px solid #dddddd;
+    border-top: 3px solid #dddddd;
     line-height:2.5em;
     padding: 0;
 }
@@ -35,9 +39,8 @@
     float:right;
 }
 
-
-#search {
-    padding:0 4px;
+.fa-search {
+    padding: 6px;
 }
 
 .recap-page-wrapper {
@@ -94,4 +97,3 @@ table.recap-tab tr:nth-child(even) {
 .recap_actions {
   margin-top: 20px;
 }
-
