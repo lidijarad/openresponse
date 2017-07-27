@@ -72,13 +72,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     )
 
 
-    block_id = String(
-        display_name=_('ID'),
-        help=_('The ID of the Recap XBlock'),
-        scope=Scope.settings,
-    )
 
-    editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download', 'download_text', 'block_id',)
+    editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download', 'download_text',)
     show_in_read_only_mode = True
 
     def resource_string(self, path):
@@ -309,11 +304,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Render a form for editing this XBlock
         """
-
-        idArray = self.scope_ids.usage_id._to_string().split('@')
-        xblockId = idArray[len(idArray) -1]
-        self.block_id = xblockId
-
         frag = Fragment()
         context = {'fields': [],
                     'xblock_list': self.xblock_list,
