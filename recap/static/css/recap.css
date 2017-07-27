@@ -36,6 +36,11 @@
     float:right;
 }
 
+.recap-nav-li:nth-child(n+1) {
+    float:left;
+}
+
+
 #search {
     padding:0 4px;
 }
