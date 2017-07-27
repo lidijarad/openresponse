@@ -17,26 +17,26 @@
     100% { transform: rotate(360deg); }
 }
 
-input.recap-search {
-   padding: 3px;
-    
+#recap-options {
+    padding: 6px 12px;
+    border-radius: 0;
+    background-color: transparent;
 }
 
 .recap-nav-ul {
     list-style: none;
-    border-bottom: 2px solid #dddddd;
-    border-top: 3px solid #dddddd;
-    line-height:2.5em;
+    line-height:2em;
     padding: 0;
 }
 
 .recap-nav-li {
     display: inline-block;
-    vertical-align:top;
+    vertical-align:middle;
 }
 
 .recap-nav-li:nth-child(n+2) {
     float:right;
+    vertical-align:middle;
 }
 
 .fa-search {
