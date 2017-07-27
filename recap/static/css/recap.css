@@ -23,21 +23,16 @@
     border-bottom: 2px solid #dddddd;
     border-top: 2px solid #dddddd;
     line-height:2.5em;
+    padding: 0;
 }
 
 .recap-nav-li {
     display: inline-block;
     vertical-align:top;
-/*    padding: 0 1.5em;*/
-/*    border-left: 2px solid #dddddd;*/
 }
 
 .recap-nav-li:nth-child(n+2) {
     float:right;
-}
-
-.recap-nav-li:nth-child(n+1) {
-    float:left;
 }
 
 
