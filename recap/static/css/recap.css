@@ -17,6 +17,32 @@
     100% { transform: rotate(360deg); }
 }
 
+#recap-options {
+    padding: 6px 12px;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+.recap-nav-ul {
+    list-style: none;
+    line-height:2em;
+    padding: 0;
+}
+
+.recap-nav-li {
+    display: inline-block;
+    vertical-align:middle;
+}
+
+.recap-nav-li:nth-child(n+2) {
+    float:right;
+    vertical-align:middle;
+}
+
+.fa-search {
+    padding: 6px;
+}
+
 .recap-page-wrapper {
     text-align:center;
 }
@@ -71,4 +97,3 @@ table.recap-tab tr:nth-child(even) {
 .recap_actions {
   margin-top: 20px;
 }
-

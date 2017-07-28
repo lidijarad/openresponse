@@ -1,6 +1,8 @@
 """TO-DO: Write a description of what this XBlock is."""
 # -*- coding: utf-8 -*-
 import re
+import json
+import ast
 import logging
 import pkg_resources
 from xblock.core import XBlock
@@ -22,7 +24,6 @@ from submissions import api
 from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
-import json
 
 @XBlock.needs("field-data")
 class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
@@ -255,9 +256,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
         return frag
 
-    def get_blocks_list(self, user):
+    def get_blocks_list(self, user, block_list):
         blocks = []
-        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+        for usage_key, xblock_type in self.get_blocks(block_list):
             try:
                 block = self.runtime.get_block(usage_key)
                 question_field, answer_field = self.get_field_names(xblock_type)
@@ -336,17 +337,19 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Returns:
             (Fragment): The HTML Fragment for this XBlock.
         """
-
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
         number_of_blocks = len(self.xblock_list)
 
-
+        recap_name_list = [] 
+        for i in range(len(recap_items)):
+            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
 
         context_dict = {
             "users": users,
             "download_text": self.download_text,
-            "make_pdf_json": recap_items[0]['make_pdf_json']
+            "make_pdf_json": recap_items[0]['make_pdf_json'],
+            'some_list': recap_name_list
         }
 
         instructor_dashboard_fragment = Fragment()
@@ -373,9 +376,8 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         user = User.objects.get(username='staff')
         blocks = self.get_blocks_list(user)
         html = self.get_user_layout(blocks)
-        file = open( 'test.pdf', "w+b")
-        pisaStatus = pisa.CreatePDF(html.encode('utf-8'), dest=file,
-            encoding='utf-8')
+        file = open('test.pdf', "w+b")
+        pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=file, encoding='utf-8')
         file.seek(0)
         pdf = file.read()
         file.close()
@@ -390,12 +392,13 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         '''
         This is a XBlock json handler for the async pdf download
         '''
-
         user = User.objects.get(id=data['user_id'])
-        blocks = self.get_blocks_list(user)
+        which_blocks = ast.literal_eval(data['these_blocks'])
+        blocks = self.get_blocks_list(user, which_blocks)
         html = self.get_user_layout(blocks, user)
 
         return {'html': html, 'user_name': user.username}
+
 
     @staticmethod
     def workbench_scenarios():
