@@ -1,5 +1,4 @@
 """TO-DO: Write a description of what this XBlock is."""
-# hi
 # -*- coding: utf-8 -*-
 import re
 import json
