@@ -117,8 +117,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
     def get_submission_key(self, usage_key):
+        user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
         return dict(
-            student_id=self.runtime.anonymous_student_id,
+            student_id=user.id,
             course_id=unicode(usage_key.course_key),
             item_id=unicode(usage_key),
             item_type=usage_key.block_type,
@@ -200,7 +201,11 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             try:
                 block = self.runtime.get_block(usage_key)
                 question_field, answer_field = self.get_field_names(xblock_type)
-                answer = self.get_answer(usage_key, block, answer_field)
+                # Get the answer using submissions api
+                answer = self.get_submission(usage_key)
+                # if submissions api wasn't used, then use old method of retrieving answer
+                if answer is None:
+                    answer = self.get_answer(usage_key, block, answer_field)
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
                 logger.warn(str(e))
@@ -219,7 +224,11 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     usage_key, xblock_type = self.get_block(self.xblock_list[x])
                     block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
-                    answer = self.get_answer(usage_key, block, answer_field)
+                    # Get the answer using submissions api
+                    answer = self.get_submission(usage_key)
+                    # if submissions api wasn't used, then use old method of retrieving answer
+                    if answer is None:
+                        answer = self.get_answer(usage_key, block, answer_field)
                     subblocks.append((getattr(block, question_field), answer))
                     current += 1
             qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
