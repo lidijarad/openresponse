@@ -118,16 +118,19 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
     def get_submission_key(self, usage_key):
 
-        student_item_dictionary = {}
 
-        if self.runtime.get_real_user:
-            user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
-            student_item_dictionary = dict(
-            student_id=user.id,
-            course_id=unicode(usage_key.course_key),
-            item_id=unicode(usage_key),
-            item_type=usage_key.block_type,
-        )
+        try:
+            if self.runtime.get_real_user:
+                user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+                student_item_dictionary = dict(
+                    student_id=user.id,
+                    course_id=unicode(usage_key.course_key),
+                    item_id=unicode(usage_key),
+                    item_type=usage_key.block_type,
+                )
+        except AttributeError:
+            student_item_dictionary = ''
+            logger.error('If you are using Studio, you will will not have access to self.runtime.get_real_user')
         return student_item_dictionary
 
 
