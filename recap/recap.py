@@ -118,13 +118,18 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
     def get_submission_key(self, usage_key):
-        user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
-        return dict(
+
+        student_item_dictionary = {}
+
+        if self.runtime.get_real_user:
+            user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+            student_item_dictionary = dict(
             student_id=user.id,
             course_id=unicode(usage_key.course_key),
             item_id=unicode(usage_key),
             item_type=usage_key.block_type,
         )
+        return student_item_dictionary
 
 
     def get_submission(self, usage_key):
