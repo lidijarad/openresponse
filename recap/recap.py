@@ -1,4 +1,5 @@
 """TO-DO: Write a description of what this XBlock is."""
+# hi
 # -*- coding: utf-8 -*-
 import re
 import json
@@ -205,7 +206,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 answer = self.get_submission(usage_key)
                 # if submissions api wasn't used, then use old method of retrieving answer
                 if answer is None:
-                    answer = self.get_answer(usage_key, block, answer_field)
+                    answer = self.get_answer(usage_key, block, answer_field)   
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
                 logger.warn(str(e))
