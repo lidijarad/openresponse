@@ -120,6 +120,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
         try:
+            logger.info('Attempting to retrieve student item dictionary.')
             user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
             student_item_dictionary = dict(
                 student_id=user.id,
@@ -135,10 +136,14 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
     def get_submission(self, usage_key):
         try:
+            
             submission_key = self.get_submission_key(usage_key)
             submission = api.get_submissions(submission_key, limit=1)
+            if submission is not None:
+                logger.info('Attempting to retreive submission from submissions api.')
             value = submission[0]["answer"]
         except IndexError:
+            logger.warn('There was an index error and no submssion could be found matching this student item dict.')
             value = None
         return value
 
@@ -212,6 +217,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 answer = self.get_submission(usage_key)
                 # if submissions api wasn't used, then use old method of retrieving answer
                 if answer is None:
+                    logger.info('The submissions api failed, using default module store.')
                     answer = self.get_answer(usage_key, block, answer_field)   
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
