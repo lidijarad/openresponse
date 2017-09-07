@@ -221,7 +221,12 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     answer = self.get_answer(usage_key, block, answer_field)   
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
+                block = self.runtime.get_block(usage_key)
+                question_field, answer_field = self.get_field_names(xblock_type)
+                answer = self.get_answer(usage_key, block, answer_field)
+                blocks.append((getattr(block, question_field), answer))
                 logger.warn(str(e))
+                logger.info('The submissions api failed in Studio, using default module store.')
 
         block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
         qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
@@ -238,7 +243,11 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
                     # Get the answer using submissions api
-                    answer = self.get_submission(usage_key)
+                    try:
+                        answer = self.get_submission(usage_key)
+                    except Exception as e:
+                        logger.warn('Studio does not have access to get_real_user')
+                        answer = self.get_answer(usage_key, block, answer_field)
                     # if submissions api wasn't used, then use old method of retrieving answer
                     if answer is None:
                         answer = self.get_answer(usage_key, block, answer_field)
