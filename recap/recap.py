@@ -7,10 +7,12 @@ import logging
 import pkg_resources
 from xblock.core import XBlock
 from django.contrib.auth.models import User
-from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
+from xblock.fields import Scope, JSONField, List, Integer, Float, Boolean, String, DateTime
 from xblock.fragment import Fragment
+from xblock.validation import Validation, ValidationMessage
+from xblock.exceptions import JsonHandlerError, NoSuchViewError
 from xblock.runtime import KvsFieldData, KeyValueStore
-from xblockutils.studio_editable import StudioEditableXBlockMixin
+from xblockutils.studio_editable import StudioEditableXBlockMixin, FutureFields
 from xblockutils.settings import XBlockWithSettingsMixin
 from xblockutils.resources import ResourceLoader
 from courseware.model_data import DjangoKeyValueStore, FieldDataCache
@@ -74,6 +76,30 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download', 'download_text',)
     show_in_read_only_mode = True
 
+    def validate_field_data_lid(self, validation, data):
+        """
+        Validate this block's field data. Instead of checking fields like self.name, check the
+        fields set on data, e.g. data.name. This allows the same validation method to be re-used
+        for the studio editor. Any errors found should be added to "validation".
+        This method should not return any value or raise any exceptions.
+        All of this XBlock's fields should be found in "data", even if they aren't being changed
+        or aren't even set (i.e. are defaults).
+        """
+        # Example:
+        # if data.count <=0:
+        #     validation.add(ValidationMessage(ValidationMessage.ERROR, u"Invalid count"))
+        print "*************HERHHRHEJRGEKHFJKEHFKJHFJEK"
+        for x_id, x_type in data.xblock_list:
+            try:
+                usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
+                block = self.runtime.get_block(usage_key)
+                yield usage_key, x_type
+            except:
+                print "THERE WAS AN EXCEPTION"
+                InvalidKeyError
+                validation.add(ValidationMessage(ValidationMessage.ERROR, u"Invalid freetext id used"))
+
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -88,6 +114,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             InvalidKeyError
 
 
+
     def get_blocks(self, xblock_list):
         for x_id, x_type in xblock_list:
             try:
@@ -95,8 +122,47 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 yield usage_key, x_type
             except:
                 InvalidKeyError
+                
+
+    @XBlock.json_handler
+    def submit_studio_edits(self, data, suffix=''):
+        """
+        AJAX handler for studio_view() Save button
+        """
+        print "THIS FUNCTION IS BEING CALED"
+        values = {}  # dict of new field values we are updating
+        to_reset = []  # list of field names to delete from this XBlock
+        for field_name in self.editable_fields:
+            field = self.fields[field_name]
+            if field_name in data['values']:
+                if isinstance(field, JSONField):
+                    values[field_name] = field.from_json(data['values'][field_name])
+                else:
+                    raise JsonHandlerError(400, "Unsupported field type: {}".format(field_name))
+            elif field_name in data['defaults'] and field.is_set_on(self):
+                to_reset.append(field_name)
+        self.clean_studio_edits(values)
+        validation = Validation(self.scope_ids.usage_id)
+        # We cannot set the fields on self yet, because even if validation fails, studio is going to save any changes we
+        # make. So we create a "fake" object that has all the field values we are about to set.
+        preview_data = FutureFields(
+            new_fields_dict=values,
+            newly_removed_fields=to_reset,
+            fallback_obj=self
+        )
 
 
+        self.validate_field_data_lid(validation, preview_data)
+        for item in self.validate_field_data_lid(validation, preview_data):
+            print "LALALALA", item
+        if validation:
+            for field_name, value in values.iteritems():
+                setattr(self, field_name, value)
+            for field_name in to_reset:
+                self.fields[field_name].delete_from(self)
+            return {'result': 'success'}
+        else:
+            raise JsonHandlerError(400, validation.to_json())
     @XBlock.json_handler
     def get_xblocks_async(self, data, suffix=''):
         """
@@ -202,6 +268,22 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         return value
 
 
+    def get_course_blocks(course_key, category):
+        """
+        Retrieve all XBlocks in the course for a particular category.
+    
+        Returns only XBlocks that are published and haven't been deleted.
+        """
+        # Note: we need to check if found components have been orphaned
+        # due to a bug in split modulestore (PLAT-799).  Once that bug
+        # is resolved, we can skip the `_is_in_course_tree()` check entirely.
+        return [
+            block for block in modulestore().get_items(
+                course_key,
+                qualifiers={"category": category},
+            )
+        ]
+
     @XBlock.supports("multi_device")
     def student_view(self, context=None):
         """
@@ -209,6 +291,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
 
         blocks = []
+        #course_key = 'block-v1:edX+DemoX+Demo_Course'
+        #print "&&&&&&&&&&&", self.get_course_blocks(course_key, 'freetextresponse')
+        
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
                 block = self.runtime.get_block(usage_key)
@@ -286,6 +371,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         })
 
         return frag
+
 
     def get_blocks_list(self, user, block_list):
         blocks = []
