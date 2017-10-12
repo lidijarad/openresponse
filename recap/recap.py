@@ -221,10 +221,6 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     answer = self.get_answer(usage_key, block, answer_field)   
                 blocks.append((getattr(block, question_field), answer))
             except Exception as e:
-                block = self.runtime.get_block(usage_key)
-                question_field, answer_field = self.get_field_names(xblock_type)
-                answer = self.get_answer(usage_key, block, answer_field)
-                blocks.append((getattr(block, question_field), answer))
                 logger.warn(str(e))
                 logger.info('The submissions api failed in Studio, using default module store.')
 
