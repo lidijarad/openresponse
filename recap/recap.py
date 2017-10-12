@@ -212,15 +212,18 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
                 block = self.runtime.get_block(usage_key)
+                print "trying to get block", block
                 question_field, answer_field = self.get_field_names(xblock_type)
                 # Get the answer using submissions api
-                if api is not None:
+                try:
                     answer = self.get_submission(usage_key)
+                    blocks.append((getattr(block, question_field), answer))
                     # if submissions api wasn't used, then use old method of retrieving answer
-                else:
+                except Exception as e:
                     logger.info('The submissions api failed, using default module store.')
-                    answer = self.get_answer(usage_key, block, answer_field)   
-                blocks.append((getattr(block, question_field), answer))
+                    answer = self.get_answer(usage_key, block, answer_field)
+                    blocks.append((getattr(block, question_field), answer))
+                    print blocks
             except Exception as e:
                 logger.warn(str(e))
                 logger.info('The submissions api failed in Studio, using default module store.')
