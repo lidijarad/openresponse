@@ -7,7 +7,7 @@ import logging
 import pkg_resources
 from xblock.core import XBlock
 from django.contrib.auth.models import User
-from xblock.fields import Scope, JSONField, List, Integer, Float, Boolean, String, DateTime
+from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
 from xblock.fragment import Fragment
 from xblock.validation import Validation, ValidationMessage
 from xblock.exceptions import JsonHandlerError, NoSuchViewError
@@ -85,16 +85,17 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         All of this XBlock's fields should be found in "data", even if they aren't being changed
         or aren't even set (i.e. are defaults).
         """
-        # Example:
-        # if data.count <=0:
-        #     validation.add(ValidationMessage(ValidationMessage.ERROR, u"Invalid count"))
+        
         for x_id, x_type in data.xblock_list:
             try:
                 usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
                 block = self.runtime.get_block(usage_key)
             except Exception as e:
                 logger.warn(e)
-                validation.add(ValidationMessage(ValidationMessage.ERROR, u"Invalid freetextresponse ID: {}".format(x_id)))
+                validation.add(
+                    ValidationMessage(ValidationMessage.ERROR,
+                    u"Invalid freetextresponse ID: {}".format(x_id))
+                )
 
 
     def resource_string(self, path):
