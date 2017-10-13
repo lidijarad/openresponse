@@ -88,8 +88,8 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         x_type,
                         x_id
                     )
-                block = self.runtime.get_block(usage_key)
-            except Exception as e:
+                self.runtime.get_block(usage_key)
+            except InvalidKeyError as e:
                 print "HERE"
                 logger.warn(e)
                 validation.add(
