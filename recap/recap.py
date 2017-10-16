@@ -32,7 +32,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
 
     display_name = String(
         display_name="Display Name",
-        help="This name of the component",
+        help="This is the name of the component",
         scope=Scope.settings,
         default="Recap"
     )
