@@ -1,32 +1,28 @@
 """TO-DO: Write a description of what this XBlock is."""
 # -*- coding: utf-8 -*-
 import re
-import json
 import ast
 import logging
 import pkg_resources
 from xblock.core import XBlock
-from django.contrib.auth.models import User
-from xblock.fields import Scope, Integer, String, Float, List, Boolean, ScopeIds
+from xblock.fields import Scope, String, List, Boolean
 from xblock.fragment import Fragment
-from xblock.runtime import KvsFieldData, KeyValueStore
+from xblock.runtime import KvsFieldData
+from xblock.validation import ValidationMessage
 from xblockutils.studio_editable import StudioEditableXBlockMixin
 from xblockutils.settings import XBlockWithSettingsMixin
 from xblockutils.resources import ResourceLoader
+from django.contrib.auth.models import User
 from courseware.model_data import DjangoKeyValueStore, FieldDataCache
 from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
 from xmodule.modulestore.django import modulestore
-from xmodule.modulestore.split_mongo import BlockKey
-from opaque_keys.edx.locations import BlockUsageLocator
-from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from submissions import api
-from xhtml2pdf import pisa
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 
 @XBlock.needs("field-data")
-class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
+class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     """
     TO-DO: document what your XBlock does.
     """
@@ -36,22 +32,22 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
     display_name = String(
         display_name="Display Name",
-        help="This name appears in the horizontal navigation at the top of the page.",
+        help="This is the name of the component",
         scope=Scope.settings,
         default="Recap"
     )
 
     xblock_list = List(
         display_name="Problems",
-        help="Add the component ID\'s of the XBlocks you wish to include in the summary.",
+        help="Component ID's of the XBlocks you wish to include in the summary.",
         allow_reset=False,
         scope=Scope.settings
     )
 
     string_html = String(
         display_name="Layout",
-        help="Include some HTML formatting (introductory paragraphs or headings) that you "
-             "would like to accompany the summary of questions and answers.",
+        help="Include HTML formatting (introductory paragraphs or headings)that"
+        " you would like to accompany the summary of questions and answers.",
         multiline_editor='html',
         default="<p>[[CONTENT]]</p>",
         scope=Scope.settings
@@ -71,8 +67,36 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         scope=Scope.settings,
     )
 
-    editable_fields = ('display_name', 'xblock_list', 'string_html', 'allow_download', 'download_text',)
+    editable_fields = (
+        'display_name',
+        'xblock_list',
+        'string_html',
+        'allow_download',
+        'download_text',
+    )
     show_in_read_only_mode = True
+
+    def validate_field_data(self, validation, data):
+        """
+        Validate this block's field data. We are validating that the chosen
+        freetextresponse xblocks ID's exist in the course
+        """
+        for x_id, x_type in data.xblock_list:
+            try:
+                usage_key =\
+                    self.scope_ids.usage_id.course_key.make_usage_key(
+                        x_type,
+                        x_id
+                    )
+                self.runtime.get_block(usage_key)
+            except Exception as e:
+                logger.warn(e)
+                validation.add(
+                    ValidationMessage(
+                        ValidationMessage.ERROR,
+                        u"Component freetextresponse ID: {} does not exist.".format(x_id)
+                    )
+                )
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -81,8 +105,15 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
     def get_block(self, xblock):
+        '''
+        Get a single freetextresponse block
+        '''
         try:
-            usage_key = self.scope_ids.usage_id.course_key.make_usage_key(xblock[1], xblock[0])
+            usage_key =\
+                self.scope_ids.usage_id.course_key.make_usage_key(
+                    xblock[1],
+                    xblock[0]
+                )
             return usage_key, xblock[1]
         except:
             InvalidKeyError
@@ -91,24 +122,19 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     def get_blocks(self, xblock_list):
         for x_id, x_type in xblock_list:
             try:
-                usage_key = self.scope_ids.usage_id.course_key.make_usage_key(x_type, x_id)
+                usage_key = \
+                    self.scope_ids.usage_id.course_key.make_usage_key(
+                        x_type,
+                        x_id
+                    )
                 yield usage_key, x_type
             except:
                 InvalidKeyError
 
 
-    @XBlock.json_handler
-    def get_xblocks_async(self, data, suffix=''):
-        """
-        Called when submitting the form in studio to get the xblock question and answer
-        """
-        self.xblock_list = data['xblock_list']
-        return { 'xblock_list': self.xblock_list }
-
-
     def get_field_names(self, xblock_type):
         """
-        Returns the correct question and answer field names for a specific XBlock type
+        Returns the correct question and answer field names for an XBlock type
         """
         if xblock_type == 'freetextresponse':
             return "display_name", "student_answer"
@@ -117,8 +143,9 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
 
 
     def get_submission_key(self, usage_key):
-
-
+        """
+        Returns submission key needed for submissions api
+        """
         try:
             logger.info('Attempting to retrieve student item dictionary.')
             user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
@@ -130,20 +157,26 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             )
         except AttributeError:
             student_item_dictionary = ''
-            logger.error('If you are using Studio, you will will not have access to self.runtime.get_real_user')
+            logger.error('Studio cannot access self.runtime.get_real_user')
         return student_item_dictionary
 
 
     def get_submission(self, usage_key):
+        """
+        Returns submission from submissions api
+        """
         try:
-            
             submission_key = self.get_submission_key(usage_key)
             submission = api.get_submissions(submission_key, limit=1)
             if submission is not None:
-                logger.info('Attempting to retreive submission from submissions api.')
+                logger.info(
+                    'Attempting to retreive submission from submissions api.'
+                )
             value = submission[0]["answer"]
         except IndexError:
-            logger.warn('There was an index error and no submssion could be found matching this student item dict.')
+            logger.warn(
+                'IndexError: no submssion matched given student item dict.'
+            )
             value = None
         return value
 
@@ -152,7 +185,10 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         """
         Returns formatted answer or placeholder string
         """
-        return re.sub(r'\n+', '<p></p>', answer) if answer else "Nothing to recap."
+        answer_str = "Nothing to recap."
+        if answer:
+            answer_str = re.sub(r'\n+', '<p></p>', answer)
+        return answer_str
 
 
     def get_answer(self, usage_key, block, field):
@@ -162,18 +198,24 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         value = None
         field_data = block.runtime.service(block, 'field-data')
         if field_data.has(block, field):
-            value = field_data.get(block, field) # value = block.fields[field].from_json(value)
+            value = field_data.get(block, field)
         else:
             descriptor = modulestore().get_item(usage_key, depth=1)
             if block.runtime.get_real_user:
-                real_user = block.runtime.get_real_user(self.runtime.anonymous_student_id)
-                field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
-                    usage_key.course_key,
-                    real_user,
-                    descriptor,
-                    asides=XBlockAsidesConfig.possible_asides(),
+                real_user = \
+                    block.runtime.get_real_user(
+                        self.runtime.anonymous_student_id
+                    )
+                field_data_cache = \
+                    FieldDataCache.cache_for_descriptor_descendents(
+                        usage_key.course_key,
+                        real_user,
+                        descriptor,
+                        asides=XBlockAsidesConfig.possible_asides(),
+                    )
+                student_data = KvsFieldData(
+                    DjangoKeyValueStore(field_data_cache)
                 )
-                student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
                 if student_data.has(block, field):
                     value = student_data.get(block, field)
         return value
@@ -185,7 +227,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         value = None
         field_data = block.runtime.service(block, 'field-data')
         if field_data.has(block, field):
-            value = field_data.get(block, field) # value = block.fields[field].from_json(value)
+            value = field_data.get(block, field)
         else:
             descriptor = modulestore().get_item(usage_key, depth=1)
             if block.runtime.get_real_user:
@@ -205,31 +247,40 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
     @XBlock.supports("multi_device")
     def student_view(self, context=None):
         """
-        The primary view of the RecapXBlock, shown to students when viewing courses.
+        The primary view of the RecapXBlock seen in LMS
         """
-
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
             try:
                 block = self.runtime.get_block(usage_key)
                 question_field, answer_field = self.get_field_names(xblock_type)
                 # Get the answer using submissions api
-                answer = self.get_submission(usage_key)
-                # if submissions api wasn't used, then use old method of retrieving answer
-                if answer is None:
-                    logger.info('The submissions api failed, using default module store.')
-                    answer = self.get_answer(usage_key, block, answer_field)   
-                blocks.append((getattr(block, question_field), answer))
+                try:
+                    answer = self.get_submission(usage_key)
+                    blocks.append((getattr(block, question_field), answer))
+                    # if submissions api wasn't used
+                except Exception as e:
+                    logger.info(
+                        'The submissions api failed, using default module store.'
+                    )
+                    answer = self.get_answer(usage_key, block, answer_field)
+                    blocks.append((getattr(block, question_field), answer))
             except Exception as e:
-                block = self.runtime.get_block(usage_key)
-                question_field, answer_field = self.get_field_names(xblock_type)
-                answer = self.get_answer(usage_key, block, answer_field)
-                blocks.append((getattr(block, question_field), answer))
                 logger.warn(str(e))
-                logger.info('The submissions api failed in Studio, using default module store.')
-
-        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>'
-        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+                logger.info(
+                    'The submissions api failed, using default module store.'
+                )
+        block_layout = (
+            '<p class="recap_question">{}</p>'
+            '<div class="recap_answer" '
+            'style="page-break-before:always">{}</div>'
+        )
+        qa_str = unicode(
+            ''.join(
+                unicode(block_layout).format(q, self.get_display_answer(a))
+                for q, a in blocks
+            )
+        )
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
         current = 0
@@ -248,12 +299,17 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     except Exception as e:
                         logger.warn('Studio does not have access to get_real_user')
                         answer = self.get_answer(usage_key, block, answer_field)
-                    # if submissions api wasn't used, then use old method of retrieving answer
+                    # if submissions api wasn't used
                     if answer is None:
                         answer = self.get_answer(usage_key, block, answer_field)
                     subblocks.append((getattr(block, question_field), answer))
                     current += 1
-            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+            qa_str = unicode(
+                ''.join(
+                    unicode(block_layout).format(q, self.get_display_answer(a))
+                    for q, a in subblocks
+                )
+            )
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):
@@ -271,12 +327,37 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
             'download_text': self.download_text,
         }
 
-        frag = Fragment(loader.render_django_template("static/html/recap.html", context).format(self=self))
+        frag = Fragment(
+            loader.render_django_template(
+                "static/html/recap.html",
+                context).format(self=self)
+        )
         frag.add_css(self.resource_string("static/css/recap.css"))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2canvas.min.js'))
-        frag.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2pdf.js'))
+        frag.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/FileSaver.js/FileSaver.min.js'
+            )
+        )
+        frag.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/jsPDF-1.3.2/jspdf.min.js'
+            )
+        )
+
+        frag.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/jsPDF-1.3.2/html2canvas.min.js'
+            )
+        )
+        frag.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/jsPDF-1.3.2/html2pdf.js'
+            )
+        )
 
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
         frag.initialize_js('RecapXBlock', {
@@ -286,6 +367,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         })
 
         return frag
+
 
     def get_blocks_list(self, user, block_list):
         blocks = []
@@ -300,10 +382,21 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         return blocks
 
     def get_user_layout(self, blocks, user):
-        
+        '''
+        For the Recap Instructor dashboard, get HTML layout of user's answers
+        '''
         layout = ''
-        block_layout = '<p class="recap_question">{}</p><div class="recap_answer" style="page-break-before:always">{}</div>' 
-        qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in blocks))
+        block_layout = (
+            '<p class="recap_question">{}</p>'
+            '<div class="recap_answer" '
+            'style="page-break-before:always">{}</div>'
+        )
+        qa_str = unicode(
+            ''.join(
+                unicode(block_layout).format(q, self.get_display_answer(a))
+                for q, a in blocks
+            )
+        )
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
         # deal with multiple blocks
@@ -321,7 +414,14 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                     answer = self.get_user_answer(usage_key, block, answer_field, user)
                     subblocks.append((getattr(block, question_field), answer))
                     current += 1
-            qa_str = unicode(''.join(unicode(block_layout).format(q, self.get_display_answer(a)) for q, a in subblocks))
+            qa_str =\
+                unicode(
+                    ''.join(
+                        unicode(block_layout).format(
+                            q,
+                            self.get_display_answer(a)) for q, a in subblocks
+                    )
+                )
             block_sets.append((m.start(0), m.end(0), qa_str))
 
         for start, end, string in reversed(block_sets):
@@ -334,9 +434,10 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         Render a form for editing this XBlock
         """
         frag = Fragment()
-        context = {'fields': [],
-                    'xblock_list': self.xblock_list,
-                  }
+        context = {
+            'fields': [],
+            'xblock_list': self.xblock_list,
+        }
         # Build a list of all the fields that can be edited:
         for field_name in self.editable_fields:
             field = self.fields[field_name]
@@ -344,7 +445,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
                 "Only Scope.content or Scope.settings fields can be used with "
                 "StudioEditableXBlockMixin. Other scopes are for user-specific data and are "
                 "not generally created/configured by content authors in Studio."
-            )
+                )
             field_info = self._make_field_info(field_name, field)
             if field_info is not None:
                 context["fields"].append(field_info)
@@ -372,7 +473,7 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         recap_items = context.get('recap_items', []) if context else []
         number_of_blocks = len(self.xblock_list)
 
-        recap_name_list = [] 
+        recap_name_list = []
         for i in range(len(recap_items)):
             recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
 
@@ -384,38 +485,47 @@ class RecapXBlock(XBlock, StudioEditableXBlockMixin, XBlockWithSettingsMixin):
         }
 
         instructor_dashboard_fragment = Fragment()
-        instructor_dashboard_fragment.content = loader.render_django_template('static/html/recap_dashboard.html', context_dict)
-        instructor_dashboard_fragment.add_css(self.resource_string("static/css/recap.css"))
-        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/FileSaver.js/FileSaver.min.js'))
-        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/jspdf.min.js'))
-        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2canvas.min.js'))
-        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, 'public/jsPDF-1.3.2/html2pdf.js'))
-        instructor_dashboard_fragment.add_javascript_url(self.runtime.local_resource_url(self, "public/recap_instructor.js"))
+        instructor_dashboard_fragment.content = loader.render_django_template(
+            'static/html/recap_dashboard.html',
+            context_dict
+        )
+        instructor_dashboard_fragment.add_css(
+            self.resource_string("static/css/recap.css")
+        )
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/FileSaver.js/FileSaver.min.js'
+            )
+        )
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/jsPDF-1.3.2/jspdf.min.js'
+            )
+        )
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/jsPDF-1.3.2/html2canvas.min.js'
+            )
+        )
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/jsPDF-1.3.2/html2pdf.js'
+            )
+        )
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                "public/recap_instructor.js"
+            )
+        )
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
 
         return instructor_dashboard_fragment
 
-
-    @XBlock.handler
-    def make_pdf(self, data, suffix=''):
-
-        '''
-        This uses the python xhtml2pdf library to create a pdf
-        '''
-
-        # This is not complete yet, do not know how to extract user from data
-        user = User.objects.get(username='staff')
-        blocks = self.get_blocks_list(user)
-        html = self.get_user_layout(blocks)
-        file = open('test.pdf', "w+b")
-        pisa_status = pisa.CreatePDF(html.encode('utf-8'), dest=file, encoding='utf-8')
-        file.seek(0)
-        pdf = file.read()
-        file.close()
-        resp = webob.Response()
-        resp.content_type = 'application/pdf'
-        resp.body = pdf
-        return resp
 
     @XBlock.json_handler
     def make_pdf_json(self, data, suffix=''):
