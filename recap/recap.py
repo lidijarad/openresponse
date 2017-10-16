@@ -89,13 +89,12 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         x_id
                     )
                 self.runtime.get_block(usage_key)
-            except InvalidKeyError as e:
-                print "HERE"
+            except Exception as e:
                 logger.warn(e)
                 validation.add(
                     ValidationMessage(
                         ValidationMessage.ERROR,
-                        u"Invalid freetextresponse ID: {}".format(x_id)
+                        u"Component freetextresponse ID: {} does not exist.".format(x_id)
                     )
                 )
 
