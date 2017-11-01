@@ -47,8 +47,60 @@
             }
         });
 
+        
+   
+        var endItem = startItem + rowsShown;
+        $('#nav a').removeClass('active').css("color", "black");;
+        $('#nav a[rel="' + currPage + '"]').addClass('active').css("color", "blue");
+        $('#recap-table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
+        css('display', 'table-row').animate({
+            opacity: 1
+        }, 300);
+        if ($nums.last().hasClass('active')) 
+            $('#nav a[rel="next"]').hide();
+        else 
+            $('#nav a[rel="next"]').show();
+        if (!$nums.first().hasClass('active')) 
+            $('#nav a[rel="prev"]').show();
+        else 
+            $('#nav a[rel="prev"]').hide();
+        $nums.hide();
+        if(numLimit < 1)
+            numLimit = 2;
+        var $temp = {};
+        if ($nums.filter('.active').is($nums.first())){
+            $('#nav a[rel="first"]').hide();
+            $('#nav a[rel="last"]').show();
+            $temp = $nums.first().show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.next().show();
+            }
+        }
+        else if ($nums.filter('.active').is($nums.last())){
+            $('#nav a[rel="last"]').hide();
+            $('#nav a[rel="first"]').show();
+            $temp = $nums.last().show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.prev().show();
+            }
+        }
+        else {
+            $('#nav a[rel="first"]').show();
+            $('#nav a[rel="last"]').show();
+            $temp = $('#nav a[rel="' + currPage + '"]').show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.prev().show();
+            }
+            $temp = $('#nav a[rel="' + currPage + '"]').show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.next().show();
+            }
+        }
+    
+
 
         $("#search").keyup(function(){
+            console.log('I am here')
             _this = this;
              // Show only matching TR, hide rest of them
             $.each($("#recap-table tbody tr"), function() {
