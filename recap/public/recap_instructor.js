@@ -3,17 +3,17 @@
 (
     function RecapDashboard(runtime, element, data) {
 
-    $('#table').after('<div id="nav" style="width:800px; margin:0 auto;"></div>');
-    var rowsShown = 5;
+    $('#recap-table').after('<div id="nav" style="width:800px; margin:0 auto;"></div>');
+    var rowsShown = 10;
     var numLimit = 3;
-    var rowsTotal = $('#table tbody tr').length;
+    var rowsTotal = $('#recap-table tbody tr').length;
     var numPages = rowsTotal / rowsShown;
     for (var i = 0; i < numPages; i++) {
         var pageNum = i + 1;
         $('#nav').append('<a class="btn nums" href="#" rel="' + i + '">' + pageNum + '</a> ');
     }
-    $('#table tbody tr').hide();
-    $('#table tbody tr').slice(0, rowsShown).show();
+    $('#recap-table tbody tr').hide();
+    $('#recap-table tbody tr').slice(0, rowsShown).show();
     $('#nav a:first').addClass('active').css("color", "blue");
     if (numPages > numLimit) {
         $('#nav').append('<a class="btn" href="#" rel="next">></a> ');
@@ -42,7 +42,7 @@
         var endItem = startItem + rowsShown;
         $('#nav a').removeClass('active').css("color", "black");;
         $('#nav a[rel="' + currPage + '"]').addClass('active').css("color", "blue");
-        $('#table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
+        $('#recap-table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
         css('display', 'table-row').animate({
             opacity: 1
         }, 300);
@@ -109,7 +109,7 @@
             $('<span class="pageNumber">&nbsp;' + (i + 1) + '</span>').appendTo($pages);
         }
 
-        $pages.appendTo('#recap-table');
+        // $pages.appendTo('#recap-table');
 
         $('.pageNumber').hover(
             function() {
