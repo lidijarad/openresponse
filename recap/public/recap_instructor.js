@@ -2,6 +2,95 @@
 /* Javascript for RecapDashboard. */
 (
     function RecapDashboard(runtime, element, data) {
+
+    $('#table').after('<div id="nav" style="width:800px; margin:0 auto;"></div>');
+    var rowsShown = 5;
+    var numLimit = 3;
+    var rowsTotal = $('#table tbody tr').length;
+    var numPages = rowsTotal / rowsShown;
+    for (var i = 0; i < numPages; i++) {
+        var pageNum = i + 1;
+        $('#nav').append('<a class="btn nums" href="#" rel="' + i + '">' + pageNum + '</a> ');
+    }
+    $('#table tbody tr').hide();
+    $('#table tbody tr').slice(0, rowsShown).show();
+    $('#nav a:first').addClass('active').css("color", "blue");
+    if (numPages > numLimit) {
+        $('#nav').append('<a class="btn" href="#" rel="next">></a> ');
+        $('#nav').prepend('<a class="btn" href="#" rel="prev" style="display:none"><</a> ');
+        $('#nav').append('<a class="btn" href="#" rel="last">>|</a> ');
+        $('#nav').prepend('<a class="btn" href="#" rel="first" style="display:none">|<</a> ');
+    }
+    $('#nav').on('click', 'a', function () {
+        var $nums = $('.nums');
+        var currPage = $(this).attr('rel');
+        if (currPage == "next") {
+            currPage = $('#nav a.active').attr('rel');
+            currPage++;
+        } else if (currPage == "prev") {
+            currPage = $('#nav a.active').attr('rel');
+            currPage--;
+        }
+        if (currPage == "first") {
+            $nums.first().trigger('click');
+            return false;
+        } else if (currPage == "last") {
+            $nums.last().trigger('click');
+            return false;
+        }
+        var startItem = currPage * rowsShown;
+        var endItem = startItem + rowsShown;
+        $('#nav a').removeClass('active').css("color", "black");;
+        $('#nav a[rel="' + currPage + '"]').addClass('active').css("color", "blue");
+        $('#table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
+        css('display', 'table-row').animate({
+            opacity: 1
+        }, 300);
+        if ($nums.last().hasClass('active')) 
+            $('#nav a[rel="next"]').hide();
+        else 
+            $('#nav a[rel="next"]').show();
+        if (!$nums.first().hasClass('active')) 
+            $('#nav a[rel="prev"]').show();
+        else 
+            $('#nav a[rel="prev"]').hide();
+        $nums.hide();
+        if(numLimit < 1)
+            numLimit = 2;
+        var $temp = {};
+        if ($nums.filter('.active').is($nums.first())){
+            $('#nav a[rel="first"]').hide();
+            $('#nav a[rel="last"]').show();
+            $temp = $nums.first().show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.next().show();
+            }
+        }
+        else if ($nums.filter('.active').is($nums.last())){
+            $('#nav a[rel="last"]').hide();
+            $('#nav a[rel="first"]').show();
+            $temp = $nums.last().show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.prev().show();
+            }
+        }
+        else {
+            $('#nav a[rel="first"]').show();
+            $('#nav a[rel="last"]').show();
+            $temp = $('#nav a[rel="' + currPage + '"]').show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.prev().show();
+            }
+            $temp = $('#nav a[rel="' + currPage + '"]').show();
+            for (var j = 0; j < numLimit; j++) {
+                $temp = $temp.next().show();
+            }
+        }
+    }).find('a.active').trigger('click');
+
+
+
+
         
         // Get the date for the pdf file name
 
@@ -47,60 +136,8 @@
             }
         });
 
-        
-   
-        var endItem = startItem + rowsShown;
-        $('#nav a').removeClass('active').css("color", "black");;
-        $('#nav a[rel="' + currPage + '"]').addClass('active').css("color", "blue");
-        $('#recap-table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
-        css('display', 'table-row').animate({
-            opacity: 1
-        }, 300);
-        if ($nums.last().hasClass('active')) 
-            $('#nav a[rel="next"]').hide();
-        else 
-            $('#nav a[rel="next"]').show();
-        if (!$nums.first().hasClass('active')) 
-            $('#nav a[rel="prev"]').show();
-        else 
-            $('#nav a[rel="prev"]').hide();
-        $nums.hide();
-        if(numLimit < 1)
-            numLimit = 2;
-        var $temp = {};
-        if ($nums.filter('.active').is($nums.first())){
-            $('#nav a[rel="first"]').hide();
-            $('#nav a[rel="last"]').show();
-            $temp = $nums.first().show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.next().show();
-            }
-        }
-        else if ($nums.filter('.active').is($nums.last())){
-            $('#nav a[rel="last"]').hide();
-            $('#nav a[rel="first"]').show();
-            $temp = $nums.last().show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.prev().show();
-            }
-        }
-        else {
-            $('#nav a[rel="first"]').show();
-            $('#nav a[rel="last"]').show();
-            $temp = $('#nav a[rel="' + currPage + '"]').show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.prev().show();
-            }
-            $temp = $('#nav a[rel="' + currPage + '"]').show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.next().show();
-            }
-        }
-    
-
 
         $("#search").keyup(function(){
-            console.log('I am here')
             _this = this;
              // Show only matching TR, hide rest of them
             $.each($("#recap-table tbody tr"), function() {
