@@ -3,96 +3,7 @@
 (
     function RecapDashboard(runtime, element, data) {
 
-    $('#recap-table').after('<div id="nav" style="width:800px; margin:0 auto;"></div>');
-    var rowsShown = 10;
-    var numLimit = 3;
-    var rowsTotal = $('#recap-table tbody tr').length;
-    var numPages = rowsTotal / rowsShown;
-    for (var i = 0; i < numPages; i++) {
-        var pageNum = i + 1;
-        $('#nav').append('<a class="btn nums" href="#" rel="' + i + '">' + pageNum + '</a> ');
-    }
-    $('#recap-table tbody tr').hide();
-    $('#recap-table tbody tr').slice(0, rowsShown).show();
-    $('#nav a:first').addClass('active').css("color", "blue");
-    if (numPages > numLimit) {
-        $('#nav').append('<a class="btn" href="#" rel="next">></a> ');
-        $('#nav').prepend('<a class="btn" href="#" rel="prev" style="display:none"><</a> ');
-        $('#nav').append('<a class="btn" href="#" rel="last">>|</a> ');
-        $('#nav').prepend('<a class="btn" href="#" rel="first" style="display:none">|<</a> ');
-    }
-    $('#nav').on('click', 'a', function () {
-        var $nums = $('.nums');
-        var currPage = $(this).attr('rel');
-        if (currPage == "next") {
-            currPage = $('#nav a.active').attr('rel');
-            currPage++;
-        } else if (currPage == "prev") {
-            currPage = $('#nav a.active').attr('rel');
-            currPage--;
-        }
-        if (currPage == "first") {
-            $nums.first().trigger('click');
-            return false;
-        } else if (currPage == "last") {
-            $nums.last().trigger('click');
-            return false;
-        }
-        var startItem = currPage * rowsShown;
-        var endItem = startItem + rowsShown;
-        $('#nav a').removeClass('active').css("color", "black");;
-        $('#nav a[rel="' + currPage + '"]').addClass('active').css("color", "blue");
-        $('#recap-table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
-        css('display', 'table-row').animate({
-            opacity: 1
-        }, 300);
-        if ($nums.last().hasClass('active')) 
-            $('#nav a[rel="next"]').hide();
-        else 
-            $('#nav a[rel="next"]').show();
-        if (!$nums.first().hasClass('active')) 
-            $('#nav a[rel="prev"]').show();
-        else 
-            $('#nav a[rel="prev"]').hide();
-        $nums.hide();
-        if(numLimit < 1)
-            numLimit = 2;
-        var $temp = {};
-        if ($nums.filter('.active').is($nums.first())){
-            $('#nav a[rel="first"]').hide();
-            $('#nav a[rel="last"]').show();
-            $temp = $nums.first().show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.next().show();
-            }
-        }
-        else if ($nums.filter('.active').is($nums.last())){
-            $('#nav a[rel="last"]').hide();
-            $('#nav a[rel="first"]').show();
-            $temp = $nums.last().show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.prev().show();
-            }
-        }
-        else {
-            $('#nav a[rel="first"]').show();
-            $('#nav a[rel="last"]').show();
-            $temp = $('#nav a[rel="' + currPage + '"]').show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.prev().show();
-            }
-            $temp = $('#nav a[rel="' + currPage + '"]').show();
-            for (var j = 0; j < numLimit; j++) {
-                $temp = $temp.next().show();
-            }
-        }
-    }).find('a.active').trigger('click');
-
-
-
-
-        
-        // Get the date for the pdf file name
+    // Get the date for the pdf file name
 
         current_date = new Date();
         month = current_date.getMonth() + 1;
@@ -101,16 +12,15 @@
 
         //Paginate users using jquery
 
-        var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
-        var recordPerPage = 10;
-        var totalPages = Math.ceil(totalRows / recordPerPage);
-        var $pages = $('<br/><div class="recap-page-wrapper" id="pages"></div>');
-        for (i = 0; i < totalPages; i++) {
-            $('<span class="pageNumber">&nbsp;' + (i + 1) + '</span>').appendTo($pages);
+        $('#recap-table').after('<div id="nav"></div>');
+        var rowsShown = 10;
+        var numLimit = 3;
+        var rowsTotal = $('#recap-table tbody tr').length;
+        var numPages = rowsTotal / rowsShown;
+        for (var i = 0; i < numPages; i++) {
+            var pageNum = i + 1;
+            $('#nav').append('<a class="btn nums" href="#" rel="' + i + '">' + pageNum + '</a> ');
         }
-
-        // $pages.appendTo('#recap-table');
-
         $('.nums').hover(
             function() {
                 $(this).addClass('focus');
@@ -122,19 +32,95 @@
 
         $('#recap-table').find('tbody tr:has(td)').hide();
         var tr = $('#recap-table').find('tbody tr:has(td)');
-        for (var i = 0; i <= recordPerPage - 1; i++) {
+        for (var i = 0; i <= rowsShown - 1; i++) {
           $(tr[i]).show();
         }
-        $('.pageNumber').click(function(event) {
+        $('.nums').click(function(event) {
           $('.recap-page-wrapper span').removeClass('active');
           $(this).addClass('active');
           $('#recap-table').find('tbody tr:has(td)').hide();
-            var nBegin = ($(this).text() - 1) * recordPerPage;
-            var nEnd = $(this).text() * recordPerPage - 1;
+            var nBegin = ($(this).text() - 1) * rowsShown;
+            var nEnd = $(this).text() * rowsShown - 1;
             for (var i = nBegin; i <= nEnd; i++) {
               $(tr[i]).show();
             }
         });
+
+        $('#recap-table tbody tr').hide();
+        $('#recap-table tbody tr').slice(0, rowsShown).show();
+        $('#nav a:first').addClass('active').css("color", "blue");
+        if (numPages > numLimit) {
+            $('#nav').append('<a class="btn np" href="#" rel="next">></a> ');
+            $('#nav').prepend('<a class="btn np" href="#" rel="prev" style="display:none"><</a> ');
+            $('#nav').append('<a class="btn np" href="#" rel="last">>|</a> ');
+            $('#nav').prepend('<a class="btn np" href="#" rel="first" style="display:none">|<</a> ');
+        }
+        $('#nav').on('click', 'a', function () {
+            var $nums = $('.nums');
+            var currPage = $(this).attr('rel');
+            if (currPage == "next") {
+                currPage = $('#nav a.active').attr('rel');
+                currPage++;
+            } else if (currPage == "prev") {
+                currPage = $('#nav a.active').attr('rel');
+                currPage--;
+            }
+            if (currPage == "first") {
+                $nums.first().trigger('click');
+                return false;
+            } else if (currPage == "last") {
+                $nums.last().trigger('click');
+                return false;
+            }
+            var startItem = currPage * rowsShown;
+            var endItem = startItem + rowsShown;
+            $('#nav a').removeClass('active').css("color", "black");;
+            $('#nav a[rel="' + currPage + '"]').addClass('active').css("color", "blue");
+            $('#recap-table tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
+            css('display', 'table-row').animate({
+                opacity: 1
+            }, 300);
+            if ($nums.last().hasClass('active')) 
+                $('#nav a[rel="next"]').hide();
+            else 
+                $('#nav a[rel="next"]').show();
+            if (!$nums.first().hasClass('active')) 
+                $('#nav a[rel="prev"]').show();
+            else 
+                $('#nav a[rel="prev"]').hide();
+            $nums.hide();
+            if(numLimit < 1)
+                numLimit = 2;
+            var $temp = {};
+            if ($nums.filter('.active').is($nums.first())){
+                $('#nav a[rel="first"]').hide();
+                $('#nav a[rel="last"]').show();
+                $temp = $nums.first().show();
+                for (var j = 0; j < numLimit; j++) {
+                    $temp = $temp.next().show();
+                }
+            }
+            else if ($nums.filter('.active').is($nums.last())){
+                $('#nav a[rel="last"]').hide();
+                $('#nav a[rel="first"]').show();
+                $temp = $nums.last().show();
+                for (var j = 0; j < numLimit; j++) {
+                    $temp = $temp.prev().show();
+                }
+            }
+            else {
+                $('#nav a[rel="first"]').show();
+                $('#nav a[rel="last"]').show();
+                $temp = $('#nav a[rel="' + currPage + '"]').show();
+                for (var j = 0; j < numLimit; j++) {
+                    $temp = $temp.prev().show();
+                }
+                $temp = $('#nav a[rel="' + currPage + '"]').show();
+                for (var j = 0; j < numLimit; j++) {
+                    $temp = $temp.next().show();
+                }
+            }
+        }).find('a.active').trigger('click');
 
 
         $("#search").keyup(function(){
