@@ -99,7 +99,7 @@
         pdf_name = ''
         pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
 
-        // Paginate users using jquery
+        //Paginate users using jquery
 
         var totalRows = $('#recap-table').find('tbody tr:has(td)').length;
         var recordPerPage = 10;
@@ -111,7 +111,7 @@
 
         // $pages.appendTo('#recap-table');
 
-        $('.pageNumber').hover(
+        $('.nums').hover(
             function() {
                 $(this).addClass('focus');
             },
