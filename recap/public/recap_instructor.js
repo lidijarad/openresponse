@@ -12,7 +12,7 @@
 
         //Paginate users using jquery
 
-        $('#recap-table').after('<div id="nav"></div>');
+        $('#recap-table').after('<div id="nav" class="sequence-bottom"></div>');
         var rowsShown = 10;
         var numLimit = 3;
         var rowsTotal = $('#recap-table tbody tr').length;
