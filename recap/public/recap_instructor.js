@@ -129,9 +129,11 @@
             $.each($("#recap-table tbody tr"), function() {
                 if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1) {
                     $(this).hide();
+                    console.log('firs if')
                 }
                 else {
                    $(this).show();
+                   console.log('second if')
                 } 
             });
          });  
