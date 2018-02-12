@@ -273,7 +273,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     )
             elif xblock_type == 'problem':
                 answer = ""
-                question == ""
+                question = ""
                 try:
                     block = self.runtime.get_block(usage_key)
                     question = block.lcp.get_question_from_p_tag()
@@ -386,10 +386,27 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         blocks = []
         for usage_key, xblock_type in self.get_blocks(block_list):
             try:
-                block = self.runtime.get_block(usage_key)
-                question_field, answer_field = self.get_field_names(xblock_type)
-                answer = self.get_user_answer(usage_key, block, answer_field, user)
-                blocks.append((getattr(block, question_field), answer))
+                if xblock_type == 'freetextresponse':
+                    try:
+                        block = self.runtime.get_block(usage_key)
+                        question_field, answer_field = self.get_field_names(xblock_type)
+                        answer = self.get_user_answer(usage_key, block, answer_field, user)
+                        blocks.append((getattr(block, question_field), answer))
+                    except Exception as e:
+                        logger.warn(str(e))
+                        logger.info(
+                            'The submissions api failed, using default module store.'
+                        )
+                elif xblock_type == 'problem':
+                    answer = ""
+                    question == ""
+                    try:
+                        block = self.runtime.get_block(usage_key)
+                        question = block.lcp.get_question_from_p_tag()
+                        answer = block.lcp.get_question_answer_text()
+                        blocks.append((question, answer))
+                    except Exception as e:
+                        blocks.append((str(usage_key), str(e)))
             except Exception as e:
                 logger.warn(str(e))
         return blocks
@@ -406,7 +423,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         qa_str = unicode(
             ''.join(
-                unicode(block_layout).format(q, self.get_display_answer(a))
+                unicode(block_layout).format(q, a)
                 for q, a in blocks
             )
         )
