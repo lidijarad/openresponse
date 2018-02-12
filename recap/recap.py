@@ -273,6 +273,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     )
             elif xblock_type == 'problem':
                 answer = ""
+                question == ""
                 try:
                     block = self.runtime.get_block(usage_key)
                     question = block.lcp.get_question_from_p_tag()
