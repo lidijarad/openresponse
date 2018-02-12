@@ -304,18 +304,30 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
                     usage_key, xblock_type = self.get_block(self.xblock_list[x])
-                    block = self.runtime.get_block(usage_key)
-                    question_field, answer_field = self.get_field_names(xblock_type)
-                    # Get the answer using submissions api
-                    try:
-                        answer = self.get_submission(usage_key)
-                    except Exception as e:
-                        logger.warn('Studio does not have access to get_real_user')
-                        answer = self.get_answer(usage_key, block, answer_field)
-                    # if submissions api wasn't used
-                    if answer is None:
-                        answer = self.get_answer(usage_key, block, answer_field)
-                    subblocks.append((getattr(block, question_field), answer))
+                    if xblock_type == 'freetextresponse':
+                
+                        block = self.runtime.get_block(usage_key)
+                        question_field, answer_field = self.get_field_names(xblock_type)
+                        # Get the answer using submissions api
+                        try:
+                            answer = self.get_submission(usage_key)
+                        except Exception as e:
+                            logger.warn('Studio does not have access to get_real_user')
+                            answer = self.get_answer(usage_key, block, answer_field)
+                        # if submissions api wasn't used
+                        if answer is None:
+                            answer = self.get_answer(usage_key, block, answer_field)
+                        subblocks.append((getattr(block, question_field), answer))
+                    elif xblock_type == 'problem':
+                        answer = ""
+                        question = ""
+                        try:
+                            block = self.runtime.get_block(usage_key)
+                            question = block.lcp.get_question_from_p_tag()
+                            answer = block.lcp.get_question_answer_text()
+                            subblocks.append((question, answer))
+                        except Exception as e:
+                            blocks.append((str(usage_key), str(e)))
                     current += 1
             qa_str = unicode(
                 ''.join(
