@@ -87,6 +87,7 @@
                         <input type="text" id="xblock-id{{forloop.counter}}" value="{{item1}}"/>
                         <select id="xblock-type{{forloop.counter}}">
                           <option value="freetextresponse"{% if item2 == "freetextresponse" %} selected="selected"{% endif %}>Free Text Response</option>
+                          <option value="problem"{% if item2 == "problem" %} selected="selected"{% endif %}>Problem</option>
                         </select>
                         <button type="button" class="remove" style="padding: 8px 10px;">-</button>
                       </div>

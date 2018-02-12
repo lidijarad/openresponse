@@ -251,25 +251,38 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-            try:
-                block = self.runtime.get_block(usage_key)
-                question_field, answer_field = self.get_field_names(xblock_type)
-                # Get the answer using submissions api
+            if xblock_type == 'freetextresponse':
                 try:
-                    answer = self.get_submission(usage_key)
-                    blocks.append((getattr(block, question_field), answer))
-                    # if submissions api wasn't used
+                    block = self.runtime.get_block(usage_key)
+                    question_field, answer_field = self.get_field_names(xblock_type)
+                    # Get the answer using submissions api
+                    try:
+                        answer = self.get_submission(usage_key)
+                        blocks.append((getattr(block, question_field), answer))
+                        # if submissions api wasn't used
+                    except Exception as e:
+                        logger.info(
+                            'The submissions api failed, using default module store.'
+                        )
+                        answer = self.get_answer(usage_key, block, answer_field)
+                        blocks.append((getattr(block, question_field), answer))
                 except Exception as e:
+                    logger.warn(str(e))
                     logger.info(
                         'The submissions api failed, using default module store.'
                     )
-                    answer = self.get_answer(usage_key, block, answer_field)
-                    blocks.append((getattr(block, question_field), answer))
-            except Exception as e:
-                logger.warn(str(e))
-                logger.info(
-                    'The submissions api failed, using default module store.'
-                )
+            elif xblock_type == 'problem':
+                answer = ""
+                question = ""
+                try:
+                    block = self.runtime.get_block(usage_key)
+                    question = block.lcp.get_question_from_p_tag()
+                    answer = block.lcp.get_question_answer_text()
+                    blocks.append((question, answer))
+                except Exception as e:
+                    blocks.append((str(usage_key), str(e)))
+            
+
         block_layout = (
             '<p class="recap_question">{}</p>'
             '<div class="recap_answer" '
@@ -277,7 +290,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         qa_str = unicode(
             ''.join(
-                unicode(block_layout).format(q, self.get_display_answer(a))
+                unicode(block_layout).format("<strong>{}</strong>".format(q), a)
                 for q, a in blocks
             )
         )
@@ -291,18 +304,30 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             for x in range(current, current+int(m.group(1))):
                 if len(self.xblock_list) > x:
                     usage_key, xblock_type = self.get_block(self.xblock_list[x])
-                    block = self.runtime.get_block(usage_key)
-                    question_field, answer_field = self.get_field_names(xblock_type)
-                    # Get the answer using submissions api
-                    try:
-                        answer = self.get_submission(usage_key)
-                    except Exception as e:
-                        logger.warn('Studio does not have access to get_real_user')
-                        answer = self.get_answer(usage_key, block, answer_field)
-                    # if submissions api wasn't used
-                    if answer is None:
-                        answer = self.get_answer(usage_key, block, answer_field)
-                    subblocks.append((getattr(block, question_field), answer))
+                    if xblock_type == 'freetextresponse':
+                
+                        block = self.runtime.get_block(usage_key)
+                        question_field, answer_field = self.get_field_names(xblock_type)
+                        # Get the answer using submissions api
+                        try:
+                            answer = self.get_submission(usage_key)
+                        except Exception as e:
+                            logger.warn('Studio does not have access to get_real_user')
+                            answer = self.get_answer(usage_key, block, answer_field)
+                        # if submissions api wasn't used
+                        if answer is None:
+                            answer = self.get_answer(usage_key, block, answer_field)
+                        subblocks.append((getattr(block, question_field), answer))
+                    elif xblock_type == 'problem':
+                        answer = ""
+                        question = ""
+                        try:
+                            block = self.runtime.get_block(usage_key)
+                            question = block.lcp.get_question_from_p_tag()
+                            answer = block.lcp.get_question_answer_text()
+                            subblocks.append((question, answer))
+                        except Exception as e:
+                            subblocks.append((str(usage_key), str(e)))
                     current += 1
             qa_str = unicode(
                 ''.join(
@@ -373,10 +398,27 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         blocks = []
         for usage_key, xblock_type in self.get_blocks(block_list):
             try:
-                block = self.runtime.get_block(usage_key)
-                question_field, answer_field = self.get_field_names(xblock_type)
-                answer = self.get_user_answer(usage_key, block, answer_field, user)
-                blocks.append((getattr(block, question_field), answer))
+                if xblock_type == 'freetextresponse':
+                    try:
+                        block = self.runtime.get_block(usage_key)
+                        question_field, answer_field = self.get_field_names(xblock_type)
+                        answer = self.get_user_answer(usage_key, block, answer_field, user)
+                        blocks.append((getattr(block, question_field), answer))
+                    except Exception as e:
+                        logger.warn(str(e))
+                        logger.info(
+                            'The submissions api failed, using default module store.'
+                        )
+                elif xblock_type == 'problem':
+                    answer = ""
+                    question == ""
+                    try:
+                        block = self.runtime.get_block(usage_key)
+                        question = block.lcp.get_question_from_p_tag()
+                        answer = block.lcp.get_question_answer_text()
+                        blocks.append((question, answer))
+                    except Exception as e:
+                        blocks.append((str(usage_key), str(e)))
             except Exception as e:
                 logger.warn(str(e))
         return blocks
@@ -393,7 +435,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         qa_str = unicode(
             ''.join(
-                unicode(block_layout).format(q, self.get_display_answer(a))
+                unicode(block_layout).format(q, a)
                 for q, a in blocks
             )
         )
