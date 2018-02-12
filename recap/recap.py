@@ -327,7 +327,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                             answer = block.lcp.get_question_answer_text()
                             subblocks.append((question, answer))
                         except Exception as e:
-                            blocks.append((str(usage_key), str(e)))
+                            subblocks.append((str(usage_key), str(e)))
                     current += 1
             qa_str = unicode(
                 ''.join(
