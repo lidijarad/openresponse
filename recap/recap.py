@@ -271,13 +271,13 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     logger.info(
                         'The submissions api failed, using default module store.'
                     )
-
             elif xblock_type == 'problem':
+                answer = ""
                 try:
                     block = self.runtime.get_block(usage_key)
-                    answer = ""
+                    question = block.lcp.get_question_from_p_tag()
                     answer = block.lcp.get_question_answer_text()
-                    blocks.append((block.lcp.problem_text, answer))
+                    blocks.append((question, answer))
                 except Exception as e:
                     blocks.append((str(usage_key), str(e)))
             
@@ -289,7 +289,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         qa_str = unicode(
             ''.join(
-                unicode(block_layout).format(q, a)
+                unicode(block_layout).format("<strong>{}</strong>".format(q), a)
                 for q, a in blocks
             )
         )
