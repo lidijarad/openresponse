@@ -277,7 +277,11 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 try:
                     block = self.runtime.get_block(usage_key)
                     question = block.display_name
-                    answer = block.lcp.get_question_answer_text()
+                    answer = self.get_submission(usage_key)
+                    if answer is None:
+                        answer = blocks.lcp.get_question_answer_text()
+                    elif answer is None:
+                        answer = "No answer data could be retrieved for this question"                    
                     blocks.append((question, answer))
                 except Exception as e:
                     blocks.append((str(usage_key), str(e)))
