@@ -276,7 +276,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 question = ""
                 try:
                     block = self.runtime.get_block(usage_key)
-                    question = block.lcp.get_question_from_p_tag()
+                    question = block.display_name
                     answer = block.lcp.get_question_answer_text()
                     blocks.append((question, answer))
                 except Exception as e:
@@ -323,7 +323,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         question = ""
                         try:
                             block = self.runtime.get_block(usage_key)
-                            question = block.lcp.get_question_from_p_tag()
+                            question = block.display_name
                             answer = block.lcp.get_question_answer_text()
                             subblocks.append((question, answer))
                         except Exception as e:
@@ -414,7 +414,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     question == ""
                     try:
                         block = self.runtime.get_block(usage_key)
-                        question = block.lcp.get_question_from_p_tag()
+                        question = block.display_name
                         answer = block.lcp.get_question_answer_text()
                         blocks.append((question, answer))
                     except Exception as e:
