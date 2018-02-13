@@ -277,10 +277,18 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 try:
                     block = self.runtime.get_block(usage_key)
                     question = block.display_name
-                    answer = block.lcp.get_question_answer_text()
+                    answer = self.get_submission(usage_key)
+                    if answer is None:
+                        answer = block.lcp.get_question_answer_text()
+                    elif answer is None:
+                        answer = "No answer data could be retrieved for this question"                    
                     blocks.append((question, answer))
                 except Exception as e:
-                    blocks.append((str(usage_key), str(e)))
+                    if answer is None:
+                        answer = block.lcp.get_question_answer_text()
+                    elif answer is None:
+                        answer = "No answer data could be retrieved for this question"   
+                    blocks.append((str(question), answer))
             
 
         block_layout = (
@@ -324,10 +332,18 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         try:
                             block = self.runtime.get_block(usage_key)
                             question = block.display_name
-                            answer = block.lcp.get_question_answer_text()
+                            answer = self.get_submission(usage_key)
+                            if answer is None:
+                                answer = block.lcp.get_question_answer_text()
+                            elif answer is None:
+                                answer = "No answer data could be retrieved for this question"                    
                             subblocks.append((question, answer))
                         except Exception as e:
-                            subblocks.append((str(usage_key), str(e)))
+                            if answer is None:
+                                answer = block.lcp.get_question_answer_text()
+                            elif answer is None:
+                                answer = "No answer data could be retrieved for this question"   
+                            subblocks.append(question, str(e))
                     current += 1
             qa_str = unicode(
                 ''.join(
