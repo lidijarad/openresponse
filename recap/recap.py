@@ -257,7 +257,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     question_field, answer_field = self.get_field_names(xblock_type)
                     # Get the answer using submissions api
                     try:
-                        answer = unicode(self.get_submission(usage_key))
+                        answer = self.get_submission(usage_key)
                         blocks.append((getattr(block, question_field), answer))
                         # if submissions api wasn't used
                     except Exception as e:
