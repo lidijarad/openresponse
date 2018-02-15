@@ -187,7 +187,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         answer_str = "Nothing to recap."
         if answer:
-            answer_str = re.sub(r'\n+', '<div></div>', answer)
+            answer_str = re.sub(r'\n+', '<div></div>', unicode(answer))
         return answer_str
 
 
@@ -277,11 +277,9 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 try:
                     block = self.runtime.get_block(usage_key)
                     question = unicode(block.display_name)
-                    answer = unicode(self.get_submission(usage_key))
+                    answer = self.get_submission(usage_key)
                     if answer is None:
-                        answer = unicode(block.lcp.get_question_answer_text())
-                    elif answer is None:
-                        answer = u"No answer data could be retrieved for this question"                    
+                        answer = block.lcp.get_question_answer_text()                   
                     blocks.append((question, answer))
                 except Exception as e:
                     if answer is None:
@@ -313,12 +311,11 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 if len(self.xblock_list) > x:
                     usage_key, xblock_type = self.get_block(self.xblock_list[x])
                     if xblock_type == 'freetextresponse':
-                
                         block = self.runtime.get_block(usage_key)
                         question_field, answer_field = self.get_field_names(xblock_type)
                         # Get the answer using submissions api
                         try:
-                            answer = unicode(self.get_submission(usage_key))
+                            answer = self.get_submission(usage_key)
                         except Exception as e:
                             logger.warn('Studio does not have access to get_real_user')
                             answer = unicode(self.get_answer(usage_key, block, answer_field))
@@ -332,17 +329,13 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         try:
                             block = self.runtime.get_block(usage_key)
                             question = unicode(block.display_name)
-                            answer = unicode(self.get_submission(usage_key))
+                            answer = self.get_submission(usage_key)
                             if answer is None:
-                                answer = unicode(block.lcp.get_question_answer_text())
-                            elif answer is None:
-                                answer = u"No answer data could be retrieved for this question"                    
+                                answer = block.lcp.get_question_answer_text()                    
                             subblocks.append((question, answer))
                         except Exception as e:
                             if answer is None:
-                                answer = unicode(block.lcp.get_question_answer_text())
-                            elif answer is None:
-                                answer = u"No answer data could be retrieved for this question"   
+                                answer = block.lcp.get_question_answer_text()  
                             subblocks.append((question, answer))
                     current += 1
             qa_str = unicode(
