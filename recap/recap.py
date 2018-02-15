@@ -282,7 +282,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         answer = block.lcp.get_question_answer_text()                   
                     blocks.append((question, answer))
                 except Exception as e:
-                    loggger.warn(str(e))
+                    logger.warn(str(e))
                     answer = block.lcp.get_question_answer_text()
                     blocks.append((question, answer))
             
