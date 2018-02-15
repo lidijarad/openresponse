@@ -187,7 +187,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         answer_str = "Nothing to recap."
         if answer:
-            answer_str = re.sub(r'\n+', '<p></p>', answer)
+            answer_str = re.sub(r'\n+', '<div></div>', answer)
         return answer_str
 
 
@@ -257,7 +257,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     question_field, answer_field = self.get_field_names(xblock_type)
                     # Get the answer using submissions api
                     try:
-                        answer = self.get_submission(usage_key)
+                        answer = unicode(self.get_submission(usage_key))
                         blocks.append((getattr(block, question_field), answer))
                         # if submissions api wasn't used
                     except Exception as e:
@@ -272,33 +272,33 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         'The submissions api failed, using default module store.'
                     )
             elif xblock_type == 'problem':
-                answer = ""
-                question = ""
+                answer = u""
+                question = u""
                 try:
                     block = self.runtime.get_block(usage_key)
-                    question = block.display_name
-                    answer = self.get_submission(usage_key)
+                    question = unicode(block.display_name)
+                    answer = unicode(self.get_submission(usage_key))
                     if answer is None:
-                        answer = block.lcp.get_question_answer_text()
+                        answer = unicode(block.lcp.get_question_answer_text())
                     elif answer is None:
-                        answer = "No answer data could be retrieved for this question"                    
+                        answer = u"No answer data could be retrieved for this question"                    
                     blocks.append((question, answer))
                 except Exception as e:
                     if answer is None:
-                        answer = block.lcp.get_question_answer_text()
+                        answer = unicode(block.lcp.get_question_answer_text())
                     elif answer is None:
-                        answer = "No answer data could be retrieved for this question"   
-                    blocks.append((str(question), answer))
+                        answer = u"No answer data could be retrieved for this question"   
+                    blocks.append((question, answer))
             
 
         block_layout = (
-            '<p class="recap_question">{}</p>'
+            '<p class="recap_question"><strong>{}</strong></p>'
             '<div class="recap_answer" '
             'style="page-break-before:always">{}</div>'
         )
         qa_str = unicode(
             ''.join(
-                unicode(block_layout).format("<strong>{}</strong>".format(q), a)
+                unicode(block_layout).format(q , self.get_display_answer(a))
                 for q, a in blocks
             )
         )
@@ -318,32 +318,32 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         question_field, answer_field = self.get_field_names(xblock_type)
                         # Get the answer using submissions api
                         try:
-                            answer = self.get_submission(usage_key)
+                            answer = unicode(self.get_submission(usage_key))
                         except Exception as e:
                             logger.warn('Studio does not have access to get_real_user')
-                            answer = self.get_answer(usage_key, block, answer_field)
+                            answer = unicode(self.get_answer(usage_key, block, answer_field))
                         # if submissions api wasn't used
                         if answer is None:
                             answer = self.get_answer(usage_key, block, answer_field)
                         subblocks.append((getattr(block, question_field), answer))
                     elif xblock_type == 'problem':
-                        answer = ""
-                        question = ""
+                        answer = u""
+                        question = u""
                         try:
                             block = self.runtime.get_block(usage_key)
-                            question = block.display_name
-                            answer = self.get_submission(usage_key)
+                            question = unicode(block.display_name)
+                            answer = unicode(self.get_submission(usage_key))
                             if answer is None:
-                                answer = block.lcp.get_question_answer_text()
+                                answer = unicode(block.lcp.get_question_answer_text())
                             elif answer is None:
-                                answer = "No answer data could be retrieved for this question"                    
+                                answer = u"No answer data could be retrieved for this question"                    
                             subblocks.append((question, answer))
                         except Exception as e:
                             if answer is None:
-                                answer = block.lcp.get_question_answer_text()
+                                answer = unicode(block.lcp.get_question_answer_text())
                             elif answer is None:
-                                answer = "No answer data could be retrieved for this question"   
-                            subblocks.append(question, str(e))
+                                answer = u"No answer data could be retrieved for this question"   
+                            subblocks.append((question, answer))
                     current += 1
             qa_str = unicode(
                 ''.join(
