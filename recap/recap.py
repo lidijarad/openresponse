@@ -282,10 +282,8 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         answer = block.lcp.get_question_answer_text()                   
                     blocks.append((question, answer))
                 except Exception as e:
-                    if answer is None:
-                        answer = unicode(block.lcp.get_question_answer_text())
-                    elif answer is None:
-                        answer = u"No answer data could be retrieved for this question"   
+                    loggger.warn(str(e))
+                    answer = block.lcp.get_question_answer_text()
                     blocks.append((question, answer))
             
 
