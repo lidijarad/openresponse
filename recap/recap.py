@@ -316,7 +316,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                             answer = self.get_submission(usage_key)
                         except Exception as e:
                             logger.warn('Studio does not have access to get_real_user')
-                            answer = unicode(self.get_answer(usage_key, block, answer_field))
+                            answer = self.get_answer(usage_key, block, answer_field)
                         # if submissions api wasn't used
                         if answer is None:
                             answer = self.get_answer(usage_key, block, answer_field)
