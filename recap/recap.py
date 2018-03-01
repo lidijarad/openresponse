@@ -4,6 +4,7 @@ import re
 import ast
 import logging
 import pkg_resources
+from django.utils.translation import ugettext_lazy as _
 from xblock.core import XBlock
 from xblock.fields import Scope, String, List, Boolean
 from xblock.fragment import Fragment
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 
 @XBlock.needs("field-data")
+@XBlock.needs("i18n")
 class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     """
     TO-DO: document what your XBlock does.
@@ -185,7 +187,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         Returns formatted answer or placeholder string
         """
-        answer_str = "Nothing to recap."
+        answer_str = _("Nothing to recap.")
         if answer:
             answer_str = re.sub(r'\n+', '<div></div>', unicode(answer))
         return answer_str
