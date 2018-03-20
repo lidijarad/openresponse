@@ -179,7 +179,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             logger.warn(
                 'IndexError: no submssion matched given student item dict.'
             )
-            value = None
+            value = _("Nothing to recap.")
         return value
 
 
@@ -420,11 +420,11 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         )
                 elif xblock_type == 'problem':
                     answer = ""
-                    question == ""
+                    question = ""
                     try:
                         block = self.runtime.get_block(usage_key)
-                        question = block.display_name
-                        answer = block.lcp.get_question_answer_text()
+                        question = unicode(block.display_name)
+                        answer = self.get_submission(usage_key)
                         blocks.append((question, answer))
                     except Exception as e:
                         blocks.append((str(usage_key), str(e)))
