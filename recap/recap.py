@@ -179,7 +179,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             logger.warn(
                 'IndexError: no submssion matched given student item dict.'
             )
-            value = None
+            value = _("Nothing to recap.")
         return value
 
 
