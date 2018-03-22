@@ -393,6 +393,14 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             )
         )
 
+        frag.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                'public/vendor/jquery.twbsPagination.js'
+            )
+        )
+
+
         frag.add_javascript(self.resource_string("static/js/src/recap.js"))
         frag.initialize_js('RecapXBlock', {
             'recap_answers_id': 'recap_answers_' + xblockId,
