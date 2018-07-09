@@ -79,10 +79,11 @@
             event.stopImmediatePropagation()
             var selected = $('#recap-options option:selected');
             var selected_id = selected.attr('id');
+            var document_heading = selected.text()
             var noteFormUrl;
             var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
             noteFormUrl = $('.recap-instructor-form').attr('action');
-            var my_data = { 'user_id': pdf_element_id, 'these_blocks': selected_id}
+            var my_data = { 'user_id': pdf_element_id, 'these_blocks': selected_id, 'document_heading': document_heading}
             SpinnerCallback(true, function() {
                 $.ajax({
                     url: noteFormUrl,
