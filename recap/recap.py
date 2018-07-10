@@ -590,9 +590,9 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         html = self.get_user_layout(blocks, user)
 
         if "<h3>" in html:
-            re.sub("<h3>(.*?)<\/h3>","<h3>{}</h3>".format(data['document_heading']), html)
+            html = re.sub("<h3>(.*?)<\/h3>","<h3>{}</h3>".format(data['document_heading']), html)
         else:
-            html = "<h3>{}</h3> \n {}".format(data['document_heading'], html)
+            html = u"<h3>{}</h3> \n {}".format(unicode(data['document_heading']), unicode(html))
 
         return {'html': html, 'user_name': user.username}
 
