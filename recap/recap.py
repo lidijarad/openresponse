@@ -444,10 +444,11 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         qa_str = unicode(
             ''.join(
-                unicode(block_layout).format(q, a)
-                for q, a in blocks
+                unicode(block_layout).format(
+                            q,
+                            self.get_display_answer(a)) for q, a in blocks
+                    )
             )
-        )
         layout = self.string_html.replace('[[CONTENT]]', qa_str)
 
         # deal with multiple blocks
@@ -523,12 +524,32 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         users = context.get('users', []) if context else []
         recap_items = context.get('recap_items', []) if context else []
         number_of_blocks = len(self.xblock_list)
+        course_id = ""
 
         recap_name_list = []
         for i in range(len(recap_items)):
             recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
 
+        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+            if usage_key.course_key:
+                course_id = usage_key.course_key
+                break
+
+        all_submissions = api.get_all_course_submission_information(course_id, 'freetextresponse', False)
+        all_submissions_user_ids = []
+        no_download = []
+
+        for student_item, submission, score in all_submissions:
+            all_submissions_user_ids.append(str(student_item['student_id']))
+
+
+        for user in users:
+            if str(user.id) not in all_submissions_user_ids:
+                no_download.append(user.id)
+
+
         context_dict = {
+            "no_download": no_download,
             "users": users,
             "download_text": self.download_text,
             "make_pdf_json": recap_items[0]['make_pdf_json'],
@@ -588,6 +609,11 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         which_blocks = ast.literal_eval(data['these_blocks'])
         blocks = self.get_blocks_list(user, which_blocks)
         html = self.get_user_layout(blocks, user)
+
+        if "<h3>" in html:
+            html = re.sub("<h3>(.*?)<\/h3>","<h3>{}</h3>".format(data['document_heading']), html)
+        else:
+            html = u"<h3>{}</h3> \n {}".format(unicode(data['document_heading']), unicode(html))
 
         return {'html': html, 'user_name': user.username}
 
