@@ -20,7 +20,6 @@
           <thead>
             <tr>
               <th>Username</th>
-              <th>Name</th>
               <th>Email</th>
               <th style="display:none">Preview</th>
               <th>Download</th>
@@ -31,7 +30,6 @@
               {% if user.id not in no_download %}
                 <tr>
                   <td>{{user.username }}</td>
-                  <td>{{user.first_name }} {{user.last_name}}</td>
                   <td>{{user.email }}</td>
                   <td id="{{user.id}}"  class="ans" style="display:none">{% autoescape off %}{% endautoescape %}</td>
                       <td>
