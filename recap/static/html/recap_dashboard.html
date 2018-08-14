@@ -1,5 +1,5 @@
 {% spaceless %}
-
+{% load i18n %}
 <section class="recap-block">
     <div class="recap-content">
     <div class="row large-centered">
@@ -19,10 +19,10 @@
         <table id="recap-table" class='recap-tab'>
           <thead>
             <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th style="display:none">Preview</th>
-              <th>Download</th>
+              <th>{% trans "Username" %}</th>
+              <th>{% trans "Email" %}</th>
+              <th style="display:none">{% trans "Preview" %}</th>
+              <th>{% trans "Download" %}</th>
             </tr>
           </thead>
           <tbody>
