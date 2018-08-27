@@ -1,4 +1,3 @@
-"""TO-DO: Write a description of what this XBlock is."""
 # -*- coding: utf-8 -*-
 import re
 import ast
@@ -26,11 +25,9 @@ loader = ResourceLoader(__name__)
 @XBlock.needs("i18n")
 class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     """
-    TO-DO: document what your XBlock does.
+    RecapXblock allows users to download a PDF copy of their answers to supported
+    Xblock types. Supported types include freetextresponse and "problem".
     """
-
-    # Fields are defined on the class.  You can access them in your code as
-    # self.<fieldname>.
 
     display_name = String(
         display_name="Display Name",
