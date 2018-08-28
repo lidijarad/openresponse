@@ -24,7 +24,7 @@ setup(
     name='recap-xblock',
     version='0.3.3',
     description='Recap XBlock',   # TODO: write a better description.
-    license='UNKNOWN',          # TODO: choose a license: 'AGPL v3' and 'Apache 2.0' are popular.
+    license='AGPL v3',          # TODO: choose a license: 'AGPL v3' and 'Apache 2.0' are popular.
     packages=[
         'recap',
     ],
