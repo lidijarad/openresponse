@@ -1,0 +1,35 @@
+{% spaceless %}
+{% load i18n %}
+<section class="recap-block">
+    <div class="recap-content">
+    <div class="row large-centered">
+        <ul class="recap-nav-ul">
+            <li class="recap-nav-li">
+                <form class="recap-select" action="{{refresh_html}}" method="post">
+                </form>
+                <select id="recap-options">
+                    {% for name, item in recap_name_list %}
+                        <option id="{{item}}" value="{{name}}">{{name}}</option>
+                    {% endfor %}
+                </select>
+            </li>
+        </ul>
+      <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+              <th>{% trans "Username" %}</th>
+              <th>{% trans "Email" %}</th>
+              <th>{% trans "Download" %}</th>
+            </tr>
+        </thead> 
+        <tbody>
+        </tbody>
+    </table>
+    </div>
+    </div>
+</section>
+<div class='recap-loader' tabindex="1000" role="dialog"></div>
+ <div id="lean_overlay" style="display: block; opacity: 1; display:none; z-index:3;"></div>
+<div>
+</div>
+{% endspaceless %}

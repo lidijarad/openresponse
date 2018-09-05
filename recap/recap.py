@@ -17,9 +17,13 @@ from courseware.model_data import DjangoKeyValueStore, FieldDataCache
 from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
-from submissions import api
+from submissions.models import Submission, StudentItem
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
+
+
+from django.http import JsonResponse
+from django.core.urlresolvers import reverse
 
 @XBlock.needs("field-data")
 @XBlock.needs("i18n")
@@ -75,6 +79,22 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     )
     show_in_read_only_mode = True
 
+    def get_recap_course_blocks(self, course_key):
+        """
+        Retrieve all XBlocks in the course for a particular category.
+    
+        Returns only XBlocks that are published and haven't been deleted.
+        """
+        # Note: we need to check if found components have been orphaned
+        # due to a bug in split modulestore (PLAT-799).  Once that bug
+        # is resolved, we can skip the `_is_in_course_tree()` check entirely.
+        return [
+            block for block in modulestore().get_items(
+                course_key,
+                qualifiers={"category": "recap"},
+            )
+        ]
+
     def validate_field_data(self, validation, data):
         """
         Validate this block's field data. We are validating that the chosen
@@ -129,6 +149,20 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 yield usage_key, x_type
             except:
                 InvalidKeyError
+
+    def get_blocks_filtering_list(self, xblock_list):
+        filter_list = []
+        for x_id, x_type in xblock_list:
+            try:
+                usage_key = \
+                    self.scope_ids.usage_id.course_key.make_usage_key(
+                        x_type,
+                        x_id
+                    )
+                filter_list.append(usage_key)
+            except:
+                InvalidKeyError
+        return filter_list
 
 
     def get_field_names(self, xblock_type):
@@ -513,53 +547,93 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 "recap_items" - all course items with names and parents, example:
                     [{"parent_name": "Vertical name",
                       "name": "Recap Display Name",
-                      "url_base": "/grade_available_responses_view",
                      }, ...]
         Returns:
             (Fragment): The HTML Fragment for this XBlock.
         """
-        users = context.get('users', []) if context else []
-        recap_items = context.get('recap_items', []) if context else []
-        number_of_blocks = len(self.xblock_list)
         course_id = ""
-
-        recap_name_list = []
-        for i in range(len(recap_items)):
-            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
-
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+           
             if usage_key.course_key:
                 course_id = usage_key.course_key
                 break
 
-        all_submissions = api.get_all_course_submission_information(course_id, 'freetextresponse', False)
-        all_submissions_user_ids = []
-        no_download = []
+        users = User.objects.filter(
+            courseenrollment__course_id=course_id,
+            courseenrollment__is_active=1,
+        ).order_by('username').values()
+        
+        user_ids = list(User.objects.filter(
+            courseenrollment__course_id=course_id,
+            courseenrollment__is_active=1,
+        ).order_by('username').values_list('id', flat=True))
+        recap_blocks = self.get_recap_course_blocks(course_id)
+        recap_items = []
 
-        for student_item, submission, score in all_submissions:
-            all_submissions_user_ids.append(str(student_item['student_id']))
+        for block in recap_blocks:
+            recap_items.append({
+                'name': block.display_name,
+                'block_list': block.xblock_list,
+                'url_base': reverse('xblock_view', args=[course_id, block.location, 'recap_blocks_listing_view']),
+                'make_pdf_json': reverse('xblock_handler', args=[course_id, block.location, 'make_pdf_json']),
+                'refresh_html': reverse('xblock_handler', args=[course_id, block.location, 'refresh_html']),
+                })
 
+        selected_recap_index = context.get('selected_recap_index', []) if context else 0
 
-        for user in users:
-            if str(user.id) not in all_submissions_user_ids:
-                no_download.append(user.id)
+        recap_name_list = []
+        freetext_block_ids = []
 
+        for i in range(len(recap_items)):
+            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
+            freetext_block_ids.append(self.get_blocks_filtering_list(recap_items[i]['block_list']))
+
+        # all_submissions_user_ids =  list(Submission.objects.select_related(
+        #     'student_item__scoresummary__latest__submission').filter(
+        #     student_item__course_id=course_id,
+        #     #student_item__item_id__in=freetext_block_ids[selected_recap_index]
+        #     student_item__item_type='freetextresponse'
+        # ).values())
+
+        # all_submissions_user_ids = list(StudentItem.objects.filter(
+        #     course_id=course_id,
+        #     item_type='freetextresponse',
+        #     item_id__in = freetext_block_ids[selected_recap_index]
+        # ).values_list('student_id', flat=True))
+
+        # all_submissions_user_ids = list(Submission.objects.select_related('student_item__scoresummary__latest__submission').filter(
+        #     student_item__course_id=course_id,
+        #     student_item__item_id__in = freetext_block_ids[i]
+        # ).values_list('student_item'))
+
+        #downloadable = list(set(map(int, all_submissions_user_ids)) & set(user_ids))
+        #downloadable_users = [user for user in users if user.get('id') in downloadable]
+
+        # for i in range(len(freetext_block_ids)):
+        #     query2 = list(Submission.objects.select_related('student_item__scoresummary__latest__submission').filter(
+        #         student_item__course_id=course_id,
+        #         student_item__item_id__in = freetext_block_ids[i]
+        #     ))
+        #     print "###########################", query2
 
         context_dict = {
-            "no_download": no_download,
             "users": users,
             "download_text": self.download_text,
             "make_pdf_json": recap_items[0]['make_pdf_json'],
-            'some_list': recap_name_list
+            "refresh_html": recap_items[0]["refresh_html"],
+            'recap_name_list': recap_name_list
         }
 
         instructor_dashboard_fragment = Fragment()
         instructor_dashboard_fragment.content = loader.render_django_template(
-            'static/html/recap_dashboard.html',
+            'static/html/recap_new_table.html',
             context_dict
         )
         instructor_dashboard_fragment.add_css(
             self.resource_string("static/css/recap.css")
+        )
+        instructor_dashboard_fragment.add_css(
+            self.resource_string("public/DataTables/css/jquery.dataTables.css")
         )
         instructor_dashboard_fragment.add_javascript_url(
             self.runtime.local_resource_url(
@@ -588,7 +662,15 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         instructor_dashboard_fragment.add_javascript_url(
             self.runtime.local_resource_url(
                 self,
-                "public/recap_instructor.js"
+                'public/DataTables/js/jquery.dataTables.js'
+            )
+        )
+
+        
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                "public/recap_new.js"
             )
         )
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
@@ -613,6 +695,15 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             html = u"<h3>{}</h3> \n {}".format(unicode(data['document_heading']), unicode(html))
 
         return {'html': html, 'user_name': user.username}
+
+
+    @XBlock.json_handler
+    def refresh_html(self, data, suffix=''):
+        """ Complete HTML view of the XBlock, for refresh by client """
+        users = User.objects.values('username', 'email', 'id')
+        print list(users)
+        return  {"data": list(users)}
+        
 
 
     @staticmethod

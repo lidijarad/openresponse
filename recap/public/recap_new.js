@@ -1,55 +1,40 @@
-
 /* Javascript for RecapDashboard. */
 (
     function RecapDashboard(runtime, element, data) {
-        
-        // Get the date for the pdf file name
-
-        current_date = new Date();
-        month = current_date.getMonth() + 1;
-        pdf_name = ''
-        pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
-
-        $('#recap-table').DataTable();
-    
-
-        // Callback for showing and hiding spinner
-        function SpinnerCallback(shouldShowSpinner, cb) {
-           if (shouldShowSpinner) {
-                $('#lean_overlay').show();
-                $('.recap-loader').show('fast', 'linear', function() { cb()});
-           } else {
-                $('#lean_overlay').hide();
-                $('.recap-loader').hide('fast', 'linear', function() { cb()});
+    var url = $('.recap-select').attr('action')
+    var getRequest ={"id":-1,"filterName":"assetFilter"};
+    getRequest =  JSON.stringify(getRequest);  
+    var table = $('#example').DataTable( {
+        ajax: {
+            url: url,
+            type: "POST",
+            data : function ( d ) {
+                return getRequest;
+            },
+            dataType : "json",
+            contentType : "application/json; charset=utf-8",
+        },
+        columns: [
+            {
+              data: "username",   
+            },
+            {
+              data: "email",
             }
-        }
- 
-        $('#recap-options').change(function() {
-            console.log('I was changed')
-            console.log($(element))
-            var url = $('.recap-select').attr('action');
-            var selected_recap_index = $('#recap-options option:selected').index();
-            var data = {'selected_recap_index' : selected_recap_index}
-            $('#recap-table').hide()
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: JSON.stringify(data),
-                dataType: 'json',
-                success: function(data) {
-                    
-                    $('#recap-table').html(data['html'])
-                    $('#recap-table').DataTable();
-    
-    
-                }
-            });
-        });
-       
+        ],
+        "columnDefs": [ {
+            "targets": -1,
+            "data": null,
+            "defaultContent": "<button>Click!</button>"
+        } ]
+    });
 
-        // Download pdf asynchronously using html2pdf library
+    $('#example tbody').on( 'click', 'button', function () {
+        var data = table.row( $(this).parents('tr') ).data();
+        alert( data[0] +"'s email is: "+ data[ 1 ] );
+    });
 
-        $('.recap-download-btn').click(function(event){
+    $('.recap-download-btn').click(function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
             var selected = $('#recap-options option:selected');
@@ -85,7 +70,9 @@
                     }
                 });
             });
-        });
+        })
+    
+
     }
 )
 ();

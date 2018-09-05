@@ -5,18 +5,16 @@
     <div class="row large-centered">
         <ul class="recap-nav-ul">
             <li class="recap-nav-li">
+                <form class="recap-select" action="{{refresh_html}}" method="post">
+                </form>
                 <select id="recap-options">
-                    {% for name, item in some_list %}
-                        <option id="{{item}}">{{name}}</option>
+                    {% for name, item in recap_name_list %}
+                        <option id="{{item}}" value="{{name}}">{{name}}</option>
                     {% endfor %}
                 </select>
             </li>
-            <li class="recap-nav-li">
-                <input type="text" id="search" class="recap-search" placeholder="Type to search"/>
-                <span class="search"><span class="icon fa fa-search" aria-hidden="true"></span></span>
-            </li>
         </ul>
-        <table id="recap-table" class='recap-tab'>
+        <table id="recap-table" class='recap-tab table table-bordered table-striped' style="width:100%">
           <thead>
             <tr>
               <th>{% trans "Username" %}</th>
@@ -27,7 +25,6 @@
           </thead>
           <tbody>
             {% for user in users %}
-              {% if user.id not in no_download %}
                 <tr>
                   <td>{{user.username }}</td>
                   <td>{{user.email }}</td>
@@ -40,7 +37,6 @@
                           </form>
                       </td>
                 </tr>
-              {% endif %}
             {% endfor %}
           </tbody>
         </table>
