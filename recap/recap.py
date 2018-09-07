@@ -4,6 +4,7 @@ import ast
 import logging
 import pkg_resources
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
 from xblock.core import XBlock
 from xblock.fields import Scope, String, List, Boolean
 from xblock.fragment import Fragment
@@ -22,8 +23,6 @@ logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 
 
-from django.http import JsonResponse
-from django.core.urlresolvers import reverse
 
 @XBlock.needs("field-data")
 @XBlock.needs("i18n")
@@ -559,11 +558,11 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             recap_name_list.append((block.display_name, block.xblock_list))
         
         make_pdf_json = reverse('xblock_handler', args=[course_id, block.location, 'make_pdf_json'])
-        refresh_html = reverse('xblock_handler', args=[course_id, block.location, 'refresh_html'])
+        refresh_table = reverse('xblock_handler', args=[course_id, block.location, 'refresh_table'])
         
         context_dict = {
             "make_pdf_json": make_pdf_json,
-            "refresh_html": refresh_html,
+            "refresh_table": refresh_table,
             'recap_name_list': recap_name_list
         }
 
@@ -640,7 +639,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
 
 
     @XBlock.json_handler
-    def refresh_html(self, data, suffix=''):
+    def refresh_table(self, data, suffix=''):
         """ Complete HTML view of the XBlock, for refresh by client """
         course_id = self.location.course_key
         recap_blocks = self.get_recap_course_blocks(course_id)
