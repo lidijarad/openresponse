@@ -608,7 +608,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 'public/DataTables/js/jquery.dataTables.js'
             )
         )
-
         
         instructor_dashboard_fragment.add_javascript_url(
             self.runtime.local_resource_url(
