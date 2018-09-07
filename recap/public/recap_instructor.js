@@ -11,8 +11,6 @@
         pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
 
         $('#recap-table').DataTable();
-    
-
         // Callback for showing and hiding spinner
         function SpinnerCallback(shouldShowSpinner, cb) {
            if (shouldShowSpinner) {
@@ -37,11 +35,8 @@
                 data: JSON.stringify(data),
                 dataType: 'json',
                 success: function(data) {
-                    
                     $('#recap-table').html(data['html'])
                     $('#recap-table').DataTable();
-    
-    
                 }
             });
         });

@@ -540,7 +540,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
 
     def recap_blocks_listing_view(self, context=None):
         """This view is used in the Racap tab in the LMS Instructor Dashboard
-        to display all available course ORA blocks.
+        to display all available course Recap xblocks.
 
         Args:
             context: contains two items:
@@ -551,37 +551,19 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         Returns:
             (Fragment): The HTML Fragment for this XBlock.
         """
-        course_id = ""
-        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-           
-            if usage_key.course_key:
-                course_id = usage_key.course_key
-                break
-        
+        course_id = self.location.course_key
         recap_blocks = self.get_recap_course_blocks(course_id)
-        recap_items = []
+        recap_name_list = []
 
         for block in recap_blocks:
-            recap_items.append({
-                'name': block.display_name,
-                'block_list': block.xblock_list,
-                'url_base': reverse('xblock_view', args=[course_id, block.location, 'recap_blocks_listing_view']),
-                'make_pdf_json': reverse('xblock_handler', args=[course_id, block.location, 'make_pdf_json']),
-                'refresh_html': reverse('xblock_handler', args=[course_id, block.location, 'refresh_html']),
-                })
-
-        selected_recap_index = 0
-
-        recap_name_list = []
-        freetext_block_ids = []
-
-        for i in range(len(recap_items)):
-            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
-            freetext_block_ids.append(self.get_blocks_filtering_list(recap_items[i]['block_list']))
-
+            recap_name_list.append((block.display_name, block.xblock_list))
+        
+        make_pdf_json = reverse('xblock_handler', args=[course_id, block.location, 'make_pdf_json'])
+        refresh_html = reverse('xblock_handler', args=[course_id, block.location, 'refresh_html'])
+        
         context_dict = {
-            "make_pdf_json": recap_items[0]['make_pdf_json'],
-            "refresh_html": recap_items[0]["refresh_html"],
+            "make_pdf_json": make_pdf_json,
+            "refresh_html": refresh_html,
             'recap_name_list': recap_name_list
         }
 
@@ -661,33 +643,23 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     @XBlock.json_handler
     def refresh_html(self, data, suffix=''):
         """ Complete HTML view of the XBlock, for refresh by client """
-        course_id = ""
-        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-           
-            if usage_key.course_key:
-                course_id = usage_key.course_key
-                break
-
+        course_id = self.location.course_key
         recap_blocks = self.get_recap_course_blocks(course_id)
         selected_recap_index = data["recap_id"]
-        print "66666666666666666666666", data
 
         recap_name_list = []
         freetext_block_ids = []
-
         for block in recap_blocks:
-            freetext_block_ids.append(self.get_blocks_filtering_list(block.block_list))
-        
+            freetext_block_ids.append(self.get_blocks_filtering_list(block.xblock_list))
         
         user_ids = User.objects.filter(
             courseenrollment__course_id=course_id,
             courseenrollment__is_active=1
         ).values_list('id', flat=True)
 
-        
         query = Submission.objects.select_related('student_item').filter(
             student_item__course_id=course_id,
-            student_item__item_type='freetextresponse',
+            student_item__item_type__in=['freetextresponse', 'problem'],
             student_item__item_id__in=freetext_block_ids[selected_recap_index]
         ).order_by('student_item__student_id', '-submitted_at', '-id').iterator()
         
@@ -695,19 +667,12 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         for q in query:
             student_submission_ids.append(int(q.student_item.student_id))
 
-        downloadable = list(set(student_submission_ids) & set(user_ids ))
         downloadable_users = User.objects.filter(
             courseenrollment__course_id=course_id,
             courseenrollment__is_active=1,
-            id__in=downloadable
+            id__in=student_submission_ids
         ).values('username', 'email', 'id')
 
-        print "#############################"
-        print downloadable
-        print student_submission_ids
-        print downloadable_users
-        print users
-        print  "****************************"
         return  {"data": list(downloadable_users) }
         
 

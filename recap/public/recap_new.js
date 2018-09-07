@@ -1,14 +1,18 @@
 /* Javascript for RecapDashboard. */
 (
     function RecapDashboard(runtime, element, data) {
-    var url = $('.recap-select').attr('action')
     
-    var table = $('#example').DataTable( {
+    var current_date = new Date();
+    var month = current_date.getMonth() + 1;
+    var pdf_name = ''
+    var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
+    var url = $('.recap-select').attr('action')
+    var table = $('#example').DataTable({
         ajax: {
             url: url,
+            processing: true,
             type: "POST",
             data : function ( d ) {
-                console.log(d)
                 return JSON.stringify({"recap_id": $('#recap-options option:selected').index()});
             },
             dataType : "json",
@@ -22,18 +26,26 @@
               data: "email",
             },
             {
-                "defaultContent" : "<button>Click!</button>"
+              "defaultContent" : "<button>Download</button>"
+            },
+            {
+              "data": "id", "visible": false
             }
         ],
     });
 
-    var idx = table.column(0).data()
-    $('#example tbody').on( 'click', 'button', function () {
-        console.log(idx)
-    });
+    function SpinnerCallback(shouldShowSpinner, cb) {
+        if (shouldShowSpinner) {
+            $('#lean_overlay').show();
+            $('.recap-loader').show('fast', 'linear', function() { cb()});
+        } else {
+            $('#lean_overlay').hide();
+            $('.recap-loader').hide('fast', 'linear', function() { cb()});
+        }
+    }
+
 
     $('#recap-options').change(function() {
-        console.log('here')
         var selected = $('#recap-options option:selected').index();
         table.ajax.reload(); 
     });
@@ -45,7 +57,9 @@
             var selected_id = selected.attr('id');
             var document_heading = selected.text()
             var noteFormUrl;
-            var user_id = $(this).closest('td').prev('.ans').attr('id');
+            var currentRow = $(this).closest("tr");
+            var data = $('#example').DataTable().row(currentRow).data();
+            var user_id = data['id']
             noteFormUrl = $('.recap-instructor-form').attr('action');
             var my_data = { 'user_id': user_id, 'these_blocks': selected_id, 'document_heading': document_heading}
             SpinnerCallback(true, function() {
