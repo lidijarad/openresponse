@@ -1,59 +1,66 @@
-
 /* Javascript for RecapDashboard. */
 (
     function RecapDashboard(runtime, element, data) {
-        
-        // Get the date for the pdf file name
-
-        current_date = new Date();
-        month = current_date.getMonth() + 1;
-        pdf_name = ''
-        pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
-
-        $('#recap-table').DataTable();
-        // Callback for showing and hiding spinner
-        function SpinnerCallback(shouldShowSpinner, cb) {
-           if (shouldShowSpinner) {
-                $('#lean_overlay').show();
-                $('.recap-loader').show('fast', 'linear', function() { cb()});
-           } else {
-                $('#lean_overlay').hide();
-                $('.recap-loader').hide('fast', 'linear', function() { cb()});
+    
+    var current_date = new Date();
+    var month = current_date.getMonth() + 1;
+    var pdf_name = ''
+    var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
+    var url = $('.recap-select').attr('action')
+    var table = $('#example').DataTable({
+        ajax: {
+            url: url,
+            processing: true,
+            type: "POST",
+            data : function ( d ) {
+                return JSON.stringify({"recap_id": $('#recap-options option:selected').index()});
+            },
+            dataType : "json",
+            contentType : "application/json; charset=utf-8",
+        },
+        columns: [
+            {
+              data: "username",   
+            },
+            {
+              data: "email",
+            },
+            {
+              "defaultContent" : "<button>Download</button>"
+            },
+            {
+              "data": "id", "visible": false
             }
+        ],
+    });
+
+    function SpinnerCallback(shouldShowSpinner, cb) {
+        if (shouldShowSpinner) {
+            $('#lean_overlay').show();
+            $('.recap-loader').show('fast', 'linear', function() { cb()});
+        } else {
+            $('#lean_overlay').hide();
+            $('.recap-loader').hide('fast', 'linear', function() { cb()});
         }
- 
-        $('#recap-options').change(function() {
-            console.log('I was changed')
-            console.log($(element))
-            var url = $('.recap-select').attr('action');
-            var selected_recap_index = $('#recap-options option:selected').index();
-            var data = {'selected_recap_index' : selected_recap_index}
-            $('#recap-table').hide()
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: JSON.stringify(data),
-                dataType: 'json',
-                success: function(data) {
-                    $('#recap-table').html(data['html'])
-                    $('#recap-table').DataTable();
-                }
-            });
-        });
-       
+    }
 
-        // Download pdf asynchronously using html2pdf library
+    $('#recap-options').change(function() {
+        var selected = $('#recap-options option:selected').index();
+        table.ajax.reload(); 
+    });
 
-        $('.recap-download-btn').click(function(event){
+    $('#example tbody').on( 'click', 'button',function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
             var selected = $('#recap-options option:selected');
             var selected_id = selected.attr('id');
             var document_heading = selected.text()
             var noteFormUrl;
-            var pdf_element_id = $(this).closest('td').prev('.ans').attr('id');
+            var currentRow = $(this).closest("tr");
+            var data = $('#example').DataTable().row(currentRow).data();
+            var user_id = data['id']
             noteFormUrl = $('.recap-instructor-form').attr('action');
-            var my_data = { 'user_id': pdf_element_id, 'these_blocks': selected_id, 'document_heading': document_heading}
+            var my_data = { 'user_id': user_id, 'these_blocks': selected_id, 'document_heading': document_heading}
             SpinnerCallback(true, function() {
                 $.ajax({
                     url: noteFormUrl,
@@ -80,7 +87,9 @@
                     }
                 });
             });
-        });
+        })
+
+
     }
 )
 ();

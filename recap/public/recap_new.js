@@ -44,7 +44,6 @@
         }
     }
 
-
     $('#recap-options').change(function() {
         var selected = $('#recap-options option:selected').index();
         table.ajax.reload(); 
