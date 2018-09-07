@@ -7,6 +7,8 @@
             <li class="recap-nav-li">
                 <form class="recap-select" action="{{refresh_html}}" method="post">
                 </form>
+                <form class="recap-instructor-form" action="{{make_pdf_json}}" method="post">
+                </form>
                 <select id="recap-options">
                     {% for name, item in recap_name_list %}
                         <option id="{{item}}" value="{{name}}">{{name}}</option>

@@ -557,16 +557,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             if usage_key.course_key:
                 course_id = usage_key.course_key
                 break
-
-        users = User.objects.filter(
-            courseenrollment__course_id=course_id,
-            courseenrollment__is_active=1,
-        ).order_by('username').values()
         
-        user_ids = list(User.objects.filter(
-            courseenrollment__course_id=course_id,
-            courseenrollment__is_active=1,
-        ).order_by('username').values_list('id', flat=True))
         recap_blocks = self.get_recap_course_blocks(course_id)
         recap_items = []
 
@@ -579,7 +570,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 'refresh_html': reverse('xblock_handler', args=[course_id, block.location, 'refresh_html']),
                 })
 
-        selected_recap_index = context.get('selected_recap_index', []) if context else 0
+        selected_recap_index = 0
 
         recap_name_list = []
         freetext_block_ids = []
@@ -588,37 +579,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
             freetext_block_ids.append(self.get_blocks_filtering_list(recap_items[i]['block_list']))
 
-        # all_submissions_user_ids =  list(Submission.objects.select_related(
-        #     'student_item__scoresummary__latest__submission').filter(
-        #     student_item__course_id=course_id,
-        #     #student_item__item_id__in=freetext_block_ids[selected_recap_index]
-        #     student_item__item_type='freetextresponse'
-        # ).values())
-
-        # all_submissions_user_ids = list(StudentItem.objects.filter(
-        #     course_id=course_id,
-        #     item_type='freetextresponse',
-        #     item_id__in = freetext_block_ids[selected_recap_index]
-        # ).values_list('student_id', flat=True))
-
-        # all_submissions_user_ids = list(Submission.objects.select_related('student_item__scoresummary__latest__submission').filter(
-        #     student_item__course_id=course_id,
-        #     student_item__item_id__in = freetext_block_ids[i]
-        # ).values_list('student_item'))
-
-        #downloadable = list(set(map(int, all_submissions_user_ids)) & set(user_ids))
-        #downloadable_users = [user for user in users if user.get('id') in downloadable]
-
-        # for i in range(len(freetext_block_ids)):
-        #     query2 = list(Submission.objects.select_related('student_item__scoresummary__latest__submission').filter(
-        #         student_item__course_id=course_id,
-        #         student_item__item_id__in = freetext_block_ids[i]
-        #     ))
-        #     print "###########################", query2
-
         context_dict = {
-            "users": users,
-            "download_text": self.download_text,
             "make_pdf_json": recap_items[0]['make_pdf_json'],
             "refresh_html": recap_items[0]["refresh_html"],
             'recap_name_list': recap_name_list
@@ -700,9 +661,54 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     @XBlock.json_handler
     def refresh_html(self, data, suffix=''):
         """ Complete HTML view of the XBlock, for refresh by client """
-        users = User.objects.values('username', 'email', 'id')
-        print list(users)
-        return  {"data": list(users)}
+        course_id = ""
+        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+           
+            if usage_key.course_key:
+                course_id = usage_key.course_key
+                break
+
+        recap_blocks = self.get_recap_course_blocks(course_id)
+        selected_recap_index = data["recap_id"]
+        print "66666666666666666666666", data
+
+        recap_name_list = []
+        freetext_block_ids = []
+
+        for block in recap_blocks:
+            freetext_block_ids.append(self.get_blocks_filtering_list(block.block_list))
+        
+        
+        user_ids = User.objects.filter(
+            courseenrollment__course_id=course_id,
+            courseenrollment__is_active=1
+        ).values_list('id', flat=True)
+
+        
+        query = Submission.objects.select_related('student_item').filter(
+            student_item__course_id=course_id,
+            student_item__item_type='freetextresponse',
+            student_item__item_id__in=freetext_block_ids[selected_recap_index]
+        ).order_by('student_item__student_id', '-submitted_at', '-id').iterator()
+        
+        student_submission_ids = []
+        for q in query:
+            student_submission_ids.append(int(q.student_item.student_id))
+
+        downloadable = list(set(student_submission_ids) & set(user_ids ))
+        downloadable_users = User.objects.filter(
+            courseenrollment__course_id=course_id,
+            courseenrollment__is_active=1,
+            id__in=downloadable
+        ).values('username', 'email', 'id')
+
+        print "#############################"
+        print downloadable
+        print student_submission_ids
+        print downloadable_users
+        print users
+        print  "****************************"
+        return  {"data": list(downloadable_users) }
         
 
 
