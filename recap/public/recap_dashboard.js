@@ -1,55 +1,54 @@
 /* Javascript for RecapDashboard. */
 (
     function RecapDashboard(runtime, element, data) {
-    
-    var current_date = new Date();
-    var month = current_date.getMonth() + 1;
-    var pdf_name = ''
-    var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
-    var url = $('.recap-select').attr('action')
-    var table = $('#example').DataTable({
-        ajax: {
-            url: url,
-            processing: true,
-            type: "POST",
-            data : function ( d ) {
-                return JSON.stringify({"recap_id": $('#recap-options option:selected').index()});
+        var current_date = new Date();
+        var month = current_date.getMonth() + 1;
+        var pdf_name = ''
+        var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
+        var url = $('.recap-select').attr('action')
+        var table = $('#example').DataTable({
+            ajax: {
+                url: url,
+                processing: true,
+                type: "POST",
+                data : function ( d ) {
+                    return JSON.stringify({"recap_id": $('#recap-options option:selected').index()});
+                },
+                dataType : "json",
+                contentType : "application/json; charset=utf-8",
             },
-            dataType : "json",
-            contentType : "application/json; charset=utf-8",
-        },
-        columns: [
-            {
-              data: "username",   
-            },
-            {
-              data: "email",
-            },
-            {
-              "defaultContent" : "<button>Download</button>"
-            },
-            {
-              "data": "id", "visible": false
+            columns: [
+                {
+                  data: "username",   
+                },
+                {
+                  data: "email",
+                },
+                {
+                  "defaultContent" : "<button>Download</button>"
+                },
+                {
+                  "data": "id", "visible": false
+                }
+            ],
+        });
+
+        function SpinnerCallback(shouldShowSpinner, cb) {
+            if (shouldShowSpinner) {
+                $('#lean_overlay').show();
+                $('.recap-loader').show('fast', 'linear', function() { cb()});
+            } else {
+                $('#lean_overlay').hide();
+                $('.recap-loader').hide('fast', 'linear', function() { cb()});
             }
-        ],
-    });
-
-    function SpinnerCallback(shouldShowSpinner, cb) {
-        if (shouldShowSpinner) {
-            $('#lean_overlay').show();
-            $('.recap-loader').show('fast', 'linear', function() { cb()});
-        } else {
-            $('#lean_overlay').hide();
-            $('.recap-loader').hide('fast', 'linear', function() { cb()});
         }
-    }
 
-    $('#recap-options').change(function() {
-        var selected = $('#recap-options option:selected').index();
-        table.ajax.reload(); 
-    });
+        $('#recap-options').change(function() {
+            var selected = $('#recap-options option:selected').index();
+            table.ajax.reload(); 
+        });
 
-    $('#example tbody').on( 'click', 'button',function(event){
+        $('#example tbody').on( 'click', 'button',function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
             var selected = $('#recap-options option:selected');
@@ -88,8 +87,5 @@
                 });
             });
         })
-
-
     }
-)
-();
+)();
