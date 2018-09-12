@@ -3,10 +3,9 @@
     function RecapDashboard(runtime, element, data) {
         var current_date = new Date();
         var month = current_date.getMonth() + 1;
-        var pdf_name = ''
         var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
         var url = $('.recap-select').attr('action')
-        var table = $('#example').DataTable({
+        var table = $('#recap-table').DataTable({
             ajax: {
                 url: url,
                 processing: true,
@@ -48,7 +47,7 @@
             table.ajax.reload(); 
         });
 
-        $('#example tbody').on( 'click', 'button',function(event){
+        $('#recap-table tbody').on( 'click', 'button',function(event){
             event.preventDefault();
             event.stopImmediatePropagation()
             var selected = $('#recap-options option:selected');
@@ -56,7 +55,7 @@
             var document_heading = selected.text()
             var noteFormUrl;
             var currentRow = $(this).closest("tr");
-            var data = $('#example').DataTable().row(currentRow).data();
+            var data = $('#recap-table').DataTable().row(currentRow).data();
             var user_id = data['id']
             noteFormUrl = $('.recap-instructor-form').attr('action');
             var my_data = { 'user_id': user_id, 'these_blocks': selected_id, 'document_heading': document_heading}
