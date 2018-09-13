@@ -26,7 +26,7 @@
             }
           },
           'cy': {
-            path: 'Welse',
+            path: 'Welsh',
             mods: {
               sLengthMenu: ""
             }
