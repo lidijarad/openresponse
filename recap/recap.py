@@ -19,6 +19,7 @@ from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
 from submissions.models import Submission, StudentItem
+from submissions import api
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 
