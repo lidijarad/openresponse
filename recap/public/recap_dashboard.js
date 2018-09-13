@@ -42,6 +42,12 @@
             mods: {
               sLengthMenu: ""
             }
+          },
+          'he': {
+            path: 'Hebrew',
+            mods: {
+              sLengthMenu: ""
+            }
           }
         };
 
