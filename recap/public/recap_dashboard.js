@@ -10,19 +10,19 @@
           'en': {
             path: 'English',
             mods: {
-              sLengthMenu: "Display _MENU_ records per page - custom test"
+              sLengthMenu: "Display _MENU_ records per page"
             }
           },
           'es-419': {
             path: 'Spanish',
             mods: {
-              sLengthMenu: "Mostrar _MENU_ registros - algo muy especial..."
+              sLengthMenu: "Mostrar _MENU_ registros"
             }
           },
           'es': {
             path: 'Spanish',
             mods: {
-              sLengthMenu: "Mostrar _MENU_ registros - algo muy especial..."
+              sLengthMenu: "Mostrar _MENU_ registros"
             }
           },
           'cy': {
