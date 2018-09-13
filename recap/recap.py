@@ -1,10 +1,10 @@
-"""TO-DO: Write a description of what this XBlock is."""
 # -*- coding: utf-8 -*-
 import re
 import ast
 import logging
 import pkg_resources
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
 from xblock.core import XBlock
 from xblock.fields import Scope, String, List, Boolean
 from xblock.fragment import Fragment
@@ -18,19 +18,19 @@ from courseware.model_data import DjangoKeyValueStore, FieldDataCache
 from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
-from submissions import api
+from submissions.models import Submission, StudentItem
 logger = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
+
+
 
 @XBlock.needs("field-data")
 @XBlock.needs("i18n")
 class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     """
-    TO-DO: document what your XBlock does.
+    RecapXblock allows users to download a PDF copy of their answers to supported
+    Xblock types. Supported types include freetextresponse and "problem".
     """
-
-    # Fields are defined on the class.  You can access them in your code as
-    # self.<fieldname>.
 
     display_name = String(
         display_name="Display Name",
@@ -77,6 +77,22 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         'download_text',
     )
     show_in_read_only_mode = True
+
+    def get_recap_course_blocks(self, course_key):
+        """
+        Retrieve all XBlocks in the course for a particular category.
+    
+        Returns only XBlocks that are published and haven't been deleted.
+        """
+        # Note: we need to check if found components have been orphaned
+        # due to a bug in split modulestore (PLAT-799).  Once that bug
+        # is resolved, we can skip the `_is_in_course_tree()` check entirely.
+        return [
+            block for block in modulestore().get_items(
+                course_key,
+                qualifiers={"category": "recap"},
+            )
+        ]
 
     def validate_field_data(self, validation, data):
         """
@@ -132,6 +148,20 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 yield usage_key, x_type
             except:
                 InvalidKeyError
+
+    def get_blocks_filtering_list(self, xblock_list):
+        filter_list = []
+        for x_id, x_type in xblock_list:
+            try:
+                usage_key = \
+                    self.scope_ids.usage_id.course_key.make_usage_key(
+                        x_type,
+                        x_id
+                    )
+                filter_list.append(usage_key)
+            except:
+                InvalidKeyError
+        return filter_list
 
 
     def get_field_names(self, xblock_type):
@@ -509,51 +539,31 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
 
     def recap_blocks_listing_view(self, context=None):
         """This view is used in the Racap tab in the LMS Instructor Dashboard
-        to display all available course ORA blocks.
+        to display all available course Recap xblocks.
 
         Args:
             context: contains two items:
                 "recap_items" - all course items with names and parents, example:
                     [{"parent_name": "Vertical name",
                       "name": "Recap Display Name",
-                      "url_base": "/grade_available_responses_view",
                      }, ...]
         Returns:
             (Fragment): The HTML Fragment for this XBlock.
         """
-        users = context.get('users', []) if context else []
-        recap_items = context.get('recap_items', []) if context else []
-        number_of_blocks = len(self.xblock_list)
-        course_id = ""
-
+        course_id = self.location.course_key
+        recap_blocks = self.get_recap_course_blocks(course_id)
         recap_name_list = []
-        for i in range(len(recap_items)):
-            recap_name_list.append((recap_items[i]['name'], recap_items[i]['block_list']))
 
-        for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-            if usage_key.course_key:
-                course_id = usage_key.course_key
-                break
-
-        all_submissions = api.get_all_course_submission_information(course_id, 'freetextresponse', False)
-        all_submissions_user_ids = []
-        no_download = []
-
-        for student_item, submission, score in all_submissions:
-            all_submissions_user_ids.append(str(student_item['student_id']))
-
-
-        for user in users:
-            if str(user.id) not in all_submissions_user_ids:
-                no_download.append(user.id)
-
-
+        for block in recap_blocks:
+            recap_name_list.append((block.display_name, block.xblock_list))
+        
+        make_pdf_json = reverse('xblock_handler', args=[course_id, block.location, 'make_pdf_json'])
+        refresh_table = reverse('xblock_handler', args=[course_id, block.location, 'refresh_table'])
+        
         context_dict = {
-            "no_download": no_download,
-            "users": users,
-            "download_text": self.download_text,
-            "make_pdf_json": recap_items[0]['make_pdf_json'],
-            'some_list': recap_name_list
+            "make_pdf_json": make_pdf_json,
+            "refresh_table": refresh_table,
+            'recap_name_list': recap_name_list
         }
 
         instructor_dashboard_fragment = Fragment()
@@ -563,6 +573,9 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         instructor_dashboard_fragment.add_css(
             self.resource_string("static/css/recap.css")
+        )
+        instructor_dashboard_fragment.add_css(
+            self.resource_string("public/DataTables/css/jquery.dataTables.css")
         )
         instructor_dashboard_fragment.add_javascript_url(
             self.runtime.local_resource_url(
@@ -591,7 +604,14 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         instructor_dashboard_fragment.add_javascript_url(
             self.runtime.local_resource_url(
                 self,
-                "public/recap_instructor.js"
+                'public/DataTables/js/jquery.dataTables.js'
+            )
+        )
+        
+        instructor_dashboard_fragment.add_javascript_url(
+            self.runtime.local_resource_url(
+                self,
+                "public/recap_dashboard.js"
             )
         )
         instructor_dashboard_fragment.initialize_js('RecapDashboard')
@@ -616,6 +636,43 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             html = u"<h3>{}</h3> \n {}".format(unicode(data['document_heading']), unicode(html))
 
         return {'html': html, 'user_name': user.username}
+
+
+    @XBlock.json_handler
+    def refresh_table(self, data, suffix=''):
+        """ Complete HTML view of the XBlock, for refresh by client """
+        course_id = self.location.course_key
+        recap_blocks = self.get_recap_course_blocks(course_id)
+        selected_recap_index = data["recap_id"]
+
+        recap_name_list = []
+        freetext_block_ids = []
+        for block in recap_blocks:
+            freetext_block_ids.append(self.get_blocks_filtering_list(block.xblock_list))
+        
+        user_ids = User.objects.filter(
+            courseenrollment__course_id=course_id,
+            courseenrollment__is_active=1
+        ).values_list('id', flat=True)
+
+        query = Submission.objects.select_related('student_item').filter(
+            student_item__course_id=course_id,
+            student_item__item_type__in=['freetextresponse', 'problem'],
+            student_item__item_id__in=freetext_block_ids[selected_recap_index]
+        ).order_by('student_item__student_id', '-submitted_at', '-id').iterator()
+        
+        student_submission_ids = []
+        for q in query:
+            student_submission_ids.append(int(q.student_item.student_id))
+
+        downloadable_users = User.objects.filter(
+            courseenrollment__course_id=course_id,
+            courseenrollment__is_active=1,
+            id__in=student_submission_ids
+        ).values('username', 'email', 'id')
+
+        return  {"data": list(downloadable_users) }
+        
 
 
     @staticmethod
