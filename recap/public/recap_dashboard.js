@@ -5,7 +5,76 @@
         var month = current_date.getMonth() + 1;
         var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
         var url = $('.recap-select').attr('action')
+        
+        var langMap = {
+          'en': {
+            path: 'English',
+            mods: {
+              sLengthMenu: "Display _MENU_ records per page - custom test"
+            }
+          },
+          'es-419': {
+            path: 'Spanish',
+            mods: {
+              sLengthMenu: "Mostrar _MENU_ registros - algo muy especial..."
+            }
+          },
+          'es': {
+            path: 'Spanish',
+            mods: {
+              sLengthMenu: "Mostrar _MENU_ registros - algo muy especial..."
+            }
+          },
+          'cy': {
+            path: 'Welse',
+            mods: {
+              sLengthMenu: ""
+            }
+          },
+          'fr': {
+            path: 'French',
+            mods: {
+              sLengthMenu: ""
+            }
+          },
+          'ar': {
+            path: 'Arabic',
+            mods: {
+              sLengthMenu: ""
+            }
+          }
+        };
+
+        function getLanguage() {
+          var lang = $('.recap-nav-ul').attr('id');
+          //var lang = data['pref-lang']
+          var result = null;
+          var path = '//cdn.datatables.net/plug-ins/1.10.13/i18n/';
+          $.ajax({
+            async: false,  
+            url: path + langMap[lang].path + '.json',
+            success: function(obj) {
+              result = $.extend({}, obj, langMap[lang].mods)
+            }
+          })
+          return result
+        }
+
+        function prefUserLanguage() {
+           $.ajax({
+             type: 'GET',
+             url: '/api/user/v1/preferences/rene' ,
+             contentType: "application/merge-patch+json",
+             success: function(data) {
+              getLanguage(data);
+             },
+             error: function() {}
+           });
+         }
+
+        var download_text = $('#recap-heading-download').text()
         var table = $('#recap-table').DataTable({
+            language: getLanguage(),
             ajax: {
                 url: url,
                 processing: true,
@@ -24,7 +93,7 @@
                   data: "email",
                 },
                 {
-                  "defaultContent" : "<button>Download</button>"
+                  "defaultContent" : "<button>" + download_text + "</button>"
                 },
                 {
                   "data": "id", "visible": false
