@@ -3,7 +3,7 @@
 <section class="recap-block">
     <div class="recap-content">
     <div class="row large-centered">
-        <ul class="recap-nav-ul">
+        <ul class="recap-nav-ul" id="{{lang_prefs}}">
             <li class="recap-nav-li">
                 <form class="recap-select" action="{{refresh_table}}" method="post">
                 </form>
@@ -19,9 +19,9 @@
       <table id="recap-table" class="display" style="width:100%">
         <thead>
             <tr>
-              <th>{% trans "Username" %}</th>
-              <th>{% trans "Email" %}</th>
-              <th>{% trans "Download" %}</th>
+              <th id="recap-heading-username">{% trans "Username" %}</th>
+              <th id="recap-heading-email">{% trans "Email" %}</th>
+              <th id="recap-heading-download">{% trans "Download" %}</th>
             </tr>
         </thead> 
         <tbody>

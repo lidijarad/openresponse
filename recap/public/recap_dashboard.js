@@ -5,7 +5,64 @@
         var month = current_date.getMonth() + 1;
         var pdf_name =  String(current_date.getDate()) + '/' + String(month) + '/' + String(current_date.getFullYear());
         var url = $('.recap-select').attr('action')
+        
+        var langMap = {
+          'en': {
+            path: 'English',
+            mods: {
+              sLengthMenu: "Display _MENU_ records per page"
+            }
+          },
+          'es-419': {
+            path: 'Spanish',
+            mods: {
+              sLengthMenu: "Mostrar _MENU_ registros"
+            }
+          },
+          'es': {
+            path: 'Spanish',
+            mods: {
+              sLengthMenu: "Mostrar _MENU_ registros"
+            }
+          },
+          'cy': {
+            path: 'Welsh',
+            mods: {
+              sLengthMenu: ""
+            }
+          },
+          'fr': {
+            path: 'French',
+            mods: {
+              sLengthMenu: ""
+            }
+          },
+          'ar': {
+            path: 'Arabic',
+            mods: {
+              sLengthMenu: ""
+            }
+          }
+        };
+
+        function getLanguage() {
+          var lang = $('.recap-nav-ul').attr('id');
+          var result = null;
+          var path = '//cdn.datatables.net/plug-ins/1.10.13/i18n/';
+          $.ajax({
+            async: false,  
+            url: path + langMap[lang].path + '.json',
+            success: function(obj) {
+              result = $.extend({}, obj, langMap[lang].mods)
+            }
+          })
+          return result
+        }
+
+
+        var download_text = $('#recap-heading-download').text()
         var table = $('#recap-table').DataTable({
+            language: getLanguage(),
             ajax: {
                 url: url,
                 processing: true,
@@ -24,7 +81,7 @@
                   data: "email",
                 },
                 {
-                  "defaultContent" : "<button>Download</button>"
+                  "defaultContent" : "<button>" + download_text + "</button>"
                 },
                 {
                   "data": "id", "visible": false
