@@ -16,8 +16,6 @@ from xblockutils.resources import ResourceLoader
 from django.contrib.auth.models import User
 from courseware.model_data import DjangoKeyValueStore, FieldDataCache
 from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
-from openedx.core.djangoapps.user_api.preferences.api import get_user_preference
-from openedx.core.djangoapps.lang_pref import LANGUAGE_KEY
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
 from submissions.models import Submission, StudentItem
@@ -563,14 +561,10 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         make_pdf_json = reverse('xblock_handler', args=[course_id, block.location, 'make_pdf_json'])
         refresh_table = reverse('xblock_handler', args=[course_id, block.location, 'refresh_table'])
         
-        user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
-        lang_prefs = get_user_preference(user, LANGUAGE_KEY)
-
         context_dict = {
             "make_pdf_json": make_pdf_json,
             "refresh_table": refresh_table,
-            "recap_name_list": recap_name_list,
-            "lang_prefs": lang_prefs
+            'recap_name_list': recap_name_list
         }
 
         instructor_dashboard_fragment = Fragment()
