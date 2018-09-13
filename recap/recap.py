@@ -566,7 +566,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
         lang_prefs = get_user_preference(user, LANGUAGE_KEY)
 
-        print "&&&&&&&&&&&&&&&&&&&&&&&&&&&", lang_prefs
         context_dict = {
             "make_pdf_json": make_pdf_json,
             "refresh_table": refresh_table,
