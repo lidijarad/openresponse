@@ -653,29 +653,23 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         selected_recap_index = data["recap_id"]
 
         recap_name_list = []
-        freetext_block_ids = []
+        block_ids = []
         for block in recap_blocks:
-            freetext_block_ids.append(self.get_blocks_filtering_list(block.xblock_list))
+            block_ids.append(self.get_blocks_filtering_list(block.xblock_list))
         
-        user_ids = User.objects.filter(
-            courseenrollment__course_id=course_id,
-            courseenrollment__is_active=1
-        ).values_list('id', flat=True)
+        query_list = []
+        for block_id in block_ids[selected_recap_index]:
+            query_list.append(Submission.objects.filter(
+                student_item__item_id=block_id
+            ).values_list('student_item__student_id', flat=True))
 
-        query = Submission.objects.select_related('student_item').filter(
-            student_item__course_id=course_id,
-            student_item__item_type__in=['freetextresponse', 'problem'],
-            student_item__item_id__in=freetext_block_ids[selected_recap_index]
-        ).order_by('student_item__student_id', '-submitted_at', '-id').iterator()
+        student_ids_intersection = list(set.intersection(*map(set,query_list)))
         
-        student_submission_ids = []
-        for q in query:
-            student_submission_ids.append(int(q.student_item.student_id))
 
         downloadable_users = User.objects.filter(
             courseenrollment__course_id=course_id,
             courseenrollment__is_active=1,
-            id__in=student_submission_ids
+            id__in=map(int, student_ids_intersection)
         ).values('username', 'email', 'id')
 
         return  {"data": list(downloadable_users) }
