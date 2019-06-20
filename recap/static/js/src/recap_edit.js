@@ -5,6 +5,8 @@ function StudioEditableXBlockMixin(runtime, element) {
     var fields = [];
     var tinyMceAvailable = (typeof $.fn.tinymce !== 'undefined'); // Studio includes a copy of tinyMCE and its jQuery plugin
     var datepickerAvailable = (typeof $.fn.datepicker !== 'undefined'); // Studio includes datepicker jQuery plugin
+    var htmlReader = new FileReader();
+    var cssReader = new FileReader();
 
     $(element).find('.field-data-control').each(function() {
         var $field = $(this);
@@ -125,6 +127,8 @@ function StudioEditableXBlockMixin(runtime, element) {
 
         // Count all the number of items in the Xblock list
         var counter = 0;
+        var inputHtmlFile= $('#xb-field-edit-html_file');
+        var inputCssFile= $('#xb-field-edit-css_file');
         $(element).find('.xblock-list-item').each(function (i) {
            counter++;
         });
@@ -157,8 +161,11 @@ function StudioEditableXBlockMixin(runtime, element) {
             newTextBoxDiv.appendTo("#TextBoxesGroup");
             counter++;
         });
+        inputHtmlFile.attr("type", "file");
+        inputHtmlFile.change(readInputFile);
+        inputCssFile.attr("type", "file");
+        inputCssFile.change(readInputFile);
     });
-
 
     $(".remove").on('click', function (e) {
 
@@ -191,10 +198,13 @@ function StudioEditableXBlockMixin(runtime, element) {
             })
              xblockList.push([xblockID, xblockType])
         });
-
         for (var i in fields) {
             var field = fields[i];
-            if (field.isSet()) {
+            if (field.isSet() && field.name == 'html_file'&& htmlReader.readyState == htmlReader.DONE) {
+                values[field.name] = htmlReader.result;
+            } else if (field.isSet() && field.name == 'css_file'&& cssReader.readyState == cssReader.DONE) {
+                values[field.name] = cssReader.result;
+            } else if (field.isSet()) {
                 values[field.name] = field.val();
             } else {
                 notSet.push(field.name);
@@ -221,4 +231,17 @@ function StudioEditableXBlockMixin(runtime, element) {
         e.preventDefault();
         runtime.notify('cancel', {});
     });
+
+    function readInputFile(input){
+        var file = input.target.files[0];
+        if (file) {
+            if (input.target.id == 'xb-field-edit-html_file'){
+                var reader = htmlReader;
+            } else {
+                var reader = cssReader;
+            }
+            reader.readAsText(file);
+        }
+
+    }
 }
