@@ -5,8 +5,7 @@ function StudioEditableXBlockMixin(runtime, element) {
     var fields = [];
     var tinyMceAvailable = (typeof $.fn.tinymce !== 'undefined'); // Studio includes a copy of tinyMCE and its jQuery plugin
     var datepickerAvailable = (typeof $.fn.datepicker !== 'undefined'); // Studio includes datepicker jQuery plugin
-    var htmlReader = new FileReader();
-    var cssReader = new FileReader();
+    var htmlResult, cssResult;
 
     $(element).find('.field-data-control').each(function() {
         var $field = $(this);
@@ -162,9 +161,9 @@ function StudioEditableXBlockMixin(runtime, element) {
             newTextBoxDiv.appendTo("#TextBoxesGroup");
             counter++;
         });
-        inputHtmlFile.attr("type", "file");
+        htmlResult = $('#xb-field-download-html_file').attr("value");
+        cssResult = $('#xb-field-download-css_file').attr("value");
         inputHtmlFile.change(readInputFile);
-        inputCssFile.attr("type", "file");
         inputCssFile.change(readInputFile);
     });
 
@@ -201,10 +200,10 @@ function StudioEditableXBlockMixin(runtime, element) {
         });
         for (var i in fields) {
             var field = fields[i];
-            if (field.isSet() && field.name == 'html_file'&& htmlReader.readyState == htmlReader.DONE) {
-                values[field.name] = htmlReader.result;
-            } else if (field.isSet() && field.name == 'css_file'&& cssReader.readyState == cssReader.DONE) {
-                values[field.name] = cssReader.result;
+            if (field.isSet() && field.name == 'html_file') {
+                values[field.name] = htmlResult;
+            } else if (field.isSet() && field.name == 'css_file') {
+                values[field.name] = cssResult;
             } else if (field.isSet()) {
                 values[field.name] = field.val();
             } else {
@@ -235,12 +234,16 @@ function StudioEditableXBlockMixin(runtime, element) {
 
     function readInputFile(input){
         var file = input.target.files[0];
+        var targetId = input.target.id;
+        var reader = new FileReader();
         if (file) {
-            if (input.target.id == 'xb-field-edit-html_file'){
-                var reader = htmlReader;
-            } else {
-                var reader = cssReader;
-            }
+            reader.onload = function(e) {
+                if (targetId == 'xb-field-edit-html_file'){
+                    htmlResult = e.target.result;
+                } else {
+                    cssResult = e.target.result;
+                }
+            };
             reader.readAsText(file);
         }
 
