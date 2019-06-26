@@ -143,6 +143,7 @@ function StudioEditableXBlockMixin(runtime, element) {
                 '<select id="xblock-type{{forloop.counter}}"' + '" id="xblock-type' + (counter+1) + '">' +
                     '<option value="freetextresponse">Free Text Response</option>' +
                      '<option value="problem">Problem</option>' +
+                     '<option value="activetable">Active Table</option>' +
                 '</select>' +
                 '<button type="button" class="remove" style="padding: 8px 10px;">-</button>' +
                 '</div>'

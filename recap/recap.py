@@ -303,9 +303,10 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
+
+            block = self.runtime.get_block(usage_key)
             if xblock_type == 'freetextresponse':
                 try:
-                    block = self.runtime.get_block(usage_key)
                     question_field, answer_field = self.get_field_names(xblock_type)
                     # Get the answer using submissions api
                     try:
@@ -327,7 +328,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 answer = u""
                 question = u""
                 try:
-                    block = self.runtime.get_block(usage_key)
                     question = unicode(block.display_name)
                     answer = self.get_submission(usage_key)
                     if answer is None:
@@ -337,6 +337,18 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     logger.warn(str(e))
                     answer = block.lcp.get_question_answer_text()
                     blocks.append((question, answer))
+            elif hasattr(block, 'custom_report_format'):
+                question = unicode(block.display_name)
+                try:
+                    student = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+                except TypeError:
+                    student = None
+                answer = block.custom_report_format(
+                    student=student,
+                    block=block,
+                    usage_key=usage_key
+                )
+                blocks.append((question, answer))
 
         layout = self.get_user_layout(blocks)
 
@@ -400,9 +412,9 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         blocks = []
         for usage_key, xblock_type in self.get_blocks(block_list):
             try:
+                block = self.runtime.get_block(usage_key)
                 if xblock_type == 'freetextresponse':
                     try:
-                        block = self.runtime.get_block(usage_key)
                         question_field, answer_field = self.get_field_names(xblock_type)
                         answer = self.get_user_answer(usage_key, block, answer_field, user)
                         blocks.append((getattr(block, question_field), answer))
@@ -415,12 +427,23 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     answer = ""
                     question = ""
                     try:
-                        block = self.runtime.get_block(usage_key)
                         question = unicode(block.display_name)
                         answer = self.get_submission(usage_key, user)
                         blocks.append((question, answer))
                     except Exception as e:
                         blocks.append((str(usage_key), str(e)))
+                elif hasattr(block, 'custom_report_format'):
+                    question = unicode(block.display_name)
+                    try:
+                        student = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+                    except TypeError:
+                        student = None
+                    answer = block.custom_report_format(
+                        student=student,
+                        block=block,
+                        usage_key=usage_key
+                    )
+                    blocks.append((question, answer))
             except Exception as e:
                 logger.warn(str(e))
         return blocks
@@ -617,7 +640,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         recap_blocks = self.get_recap_course_blocks(course_id)
         selected_recap_index = data["recap_id"]
 
-        recap_name_list = []
         block_ids = []
         for block in recap_blocks:
             block_ids.append(self.get_blocks_filtering_list(block.xblock_list))
@@ -628,7 +650,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 student_item__item_id=block_id
             ).values_list('student_item__student_id', flat=True))
 
-        student_ids_intersection = list(set.intersection(*map(set,query_list)))
+        student_ids_intersection = list(set.intersection(*map(set, query_list)))
 
         downloadable_users = User.objects.filter(
             courseenrollment__course_id=course_id,
