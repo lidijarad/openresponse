@@ -48,6 +48,11 @@ function StudioEditableXBlockMixin(runtime, element) {
             $field.val($wrapper.attr('data-default')); // Use attr instead of data to force treating the default value as a string
             $wrapper.removeClass('is-set');
             $resetButton.removeClass('active').addClass('inactive');
+            if ($field.attr('id') == 'xb-field-edit-html_file') {
+                var textAreaParent = $('#xb-field-edit-string_html').parent();
+                textAreaParent.css('pointer-events', 'auto');
+                textAreaParent.css('opacity', '1');
+            }
         });
         if (type == 'html' && tinyMceAvailable) {
             tinyMCE.baseURL = baseUrl + "/js/vendor/tinymce/js/tinymce";
@@ -162,6 +167,11 @@ function StudioEditableXBlockMixin(runtime, element) {
             counter++;
         });
         htmlResult = $('#xb-field-download-html_file').attr("value");
+        if (htmlResult){
+            var textAreaParent = $('#xb-field-edit-string_html').parent();
+            textAreaParent.css('pointer-events', 'none');
+            textAreaParent.css('opacity', '0.4');
+        }
         cssResult = $('#xb-field-download-css_file').attr("value");
         inputHtmlFile.change(readInputFile);
         inputCssFile.change(readInputFile);
@@ -240,6 +250,9 @@ function StudioEditableXBlockMixin(runtime, element) {
             reader.onload = function(e) {
                 if (targetId == 'xb-field-edit-html_file'){
                     htmlResult = e.target.result;
+                    var textAreaParent = $('#xb-field-edit-string_html').parent();
+                    textAreaParent.css('pointer-events', 'none');
+                    textAreaParent.css('opacity', '0.4')
                 } else {
                     cssResult = e.target.result;
                 }
