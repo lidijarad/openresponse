@@ -8,14 +8,11 @@ from django.core.urlresolvers import reverse
 from xblock.core import XBlock
 from xblock.fields import Scope, String, List, Boolean
 from xblock.fragment import Fragment
-from xblock.runtime import KvsFieldData
 from xblock.validation import ValidationMessage
 from xblockutils.studio_editable import StudioEditableXBlockMixin
 from xblockutils.settings import XBlockWithSettingsMixin
 from xblockutils.resources import ResourceLoader
 from django.contrib.auth.models import User
-from courseware.model_data import DjangoKeyValueStore, FieldDataCache
-from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
 from openedx.core.djangoapps.user_api.preferences.api import get_user_preference
 from openedx.core.djangoapps.lang_pref import LANGUAGE_KEY
 from xmodule.modulestore.django import modulestore
@@ -143,20 +140,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
-    def get_block(self, xblock):
-        '''
-        Get a single freetextresponse block
-        '''
-        try:
-            usage_key =\
-                self.scope_ids.usage_id.course_key.make_usage_key(
-                    xblock[1],
-                    xblock[0]
-                )
-            return usage_key, xblock[1]
-        except InvalidKeyError:
-            pass
-
     def get_blocks(self, xblock_list):
         for x_id, x_type in xblock_list:
             try:
@@ -182,18 +165,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             except InvalidKeyError:
                 pass
         return filter_list
-
-    def get_field_names(self, xblock_type):
-        """
-        Returns the correct question and answer field names for an XBlock type
-        """
-        if xblock_type == 'freetextresponse':
-            return "display_name", "student_answer"
-
-        elif xblock_type == 'problem':
-            return 'display_name', 'student_answers_text'
-        else:
-            raise Exception('The XBlock type selected does not exist.')
 
     def get_submission_key(self, usage_key, user=None):
         """
@@ -242,63 +213,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             answer_str = re.sub(r'\n+', '<div></div>', unicode(answer))
         return answer_str
 
-    def get_answer(self, usage_key, block, field):
-        """
-        Returns value from Scope.user_state field in any xblock
-        """
-        value = None
-        field_data = block.runtime.service(block, 'field-data')
-        if field_data.has(block, field):
-            value = field_data.get(block, field)
-        else:
-            descriptor = modulestore().get_item(usage_key, depth=1)
-            if block.runtime.get_real_user:
-                real_user = \
-                    block.runtime.get_real_user(
-                        self.runtime.anonymous_student_id
-                    )
-                field_data_cache = \
-                    FieldDataCache.cache_for_descriptor_descendents(
-                        usage_key.course_key,
-                        real_user,
-                        descriptor,
-                        asides=XBlockAsidesConfig.possible_asides(),
-                    )
-                student_data = KvsFieldData(
-                    DjangoKeyValueStore(field_data_cache)
-                )
-                if student_data.has(block, field):
-                    value = student_data.get(block, field)
-        return value
-
-    def get_user_answer(self, usage_key, block, field, user):
-        """
-        Returns value from Scope.user_state field in any xblock
-        """
-        try:
-            return self.get_submission(usage_key, user)
-        except Exception:
-            pass
-
-        value = None
-        field_data = block.runtime.service(block, 'field-data')
-        if field_data.has(block, field):
-            value = field_data.get(block, field)
-        else:
-            descriptor = modulestore().get_item(usage_key, depth=1)
-            if block.runtime.get_real_user:
-                real_user = user
-                field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
-                    usage_key.course_key,
-                    real_user,
-                    descriptor,
-                    asides=XBlockAsidesConfig.possible_asides(),
-                )
-                student_data = KvsFieldData(DjangoKeyValueStore(field_data_cache))
-                if student_data.has(block, field):
-                    value = student_data.get(block, field)
-        return value
-
     @XBlock.supports("multi_device")
     def student_view(self, context=None):
         """
@@ -308,25 +222,17 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
 
             block = self.runtime.get_block(usage_key)
-            if xblock_type == 'freetextresponse':
+            if hasattr(block, 'custom_report_format'):
+                question = unicode(block.display_name)
                 try:
-                    question_field, answer_field = self.get_field_names(xblock_type)
-                    # Get the answer using submissions api
-                    try:
-                        answer = self.get_submission(usage_key)
-                        blocks.append((getattr(block, question_field), answer))
-                        # if submissions api wasn't used
-                    except Exception as e:
-                        logger.info(
-                            'The submissions api failed, using default module store.'
-                        )
-                        answer = self.get_answer(usage_key, block, answer_field)
-                        blocks.append((getattr(block, question_field), answer))
-                except Exception as e:
-                    logger.warn(str(e))
-                    logger.info(
-                        'The submissions api failed, using default module store.'
-                    )
+                    user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+                except TypeError:
+                    user = None
+                answer = block.custom_report_format(
+                    user=user,
+                    block=block,
+                )
+                blocks.append((question, answer))
             elif xblock_type == 'problem':
                 answer = u""
                 question = u""
@@ -340,18 +246,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     logger.warn(str(e))
                     answer = block.lcp.get_question_answer_text()
                     blocks.append((question, answer))
-            elif hasattr(block, 'custom_report_format'):
-                question = unicode(block.display_name)
-                try:
-                    student = self.runtime.get_real_user(self.runtime.anonymous_student_id)
-                except TypeError:
-                    student = None
-                answer = block.custom_report_format(
-                    student=student,
-                    block=block,
-                    usage_key=usage_key
-                )
-                blocks.append((question, answer))
 
         layout = self.get_user_layout(blocks)
 
@@ -416,16 +310,13 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(block_list):
             try:
                 block = self.runtime.get_block(usage_key)
-                if xblock_type == 'freetextresponse':
-                    try:
-                        question_field, answer_field = self.get_field_names(xblock_type)
-                        answer = self.get_user_answer(usage_key, block, answer_field, user)
-                        blocks.append((getattr(block, question_field), answer))
-                    except Exception as e:
-                        logger.warn(str(e))
-                        logger.info(
-                            'The submissions api failed, using default module store.'
-                        )
+                if hasattr(block, 'custom_report_format'):
+                    question = unicode(block.display_name)
+                    answer = block.custom_report_format(
+                        user=user,
+                        block=block,
+                    )
+                    blocks.append((question, answer))
                 elif xblock_type == 'problem':
                     answer = ""
                     question = ""
@@ -435,18 +326,6 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                         blocks.append((question, answer))
                     except Exception as e:
                         blocks.append((str(usage_key), str(e)))
-                elif hasattr(block, 'custom_report_format'):
-                    question = unicode(block.display_name)
-                    try:
-                        student = self.runtime.get_real_user(self.runtime.anonymous_student_id)
-                    except TypeError:
-                        student = None
-                    answer = block.custom_report_format(
-                        student=student,
-                        block=block,
-                        usage_key=usage_key
-                    )
-                    blocks.append((question, answer))
             except Exception as e:
                 logger.warn(str(e))
         return blocks
