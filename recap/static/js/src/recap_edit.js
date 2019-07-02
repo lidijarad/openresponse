@@ -5,6 +5,7 @@ function StudioEditableXBlockMixin(runtime, element) {
     var fields = [];
     var tinyMceAvailable = (typeof $.fn.tinymce !== 'undefined'); // Studio includes a copy of tinyMCE and its jQuery plugin
     var datepickerAvailable = (typeof $.fn.datepicker !== 'undefined'); // Studio includes datepicker jQuery plugin
+    var htmlResult, cssResult;
 
     $(element).find('.field-data-control').each(function() {
         var $field = $(this);
@@ -47,6 +48,11 @@ function StudioEditableXBlockMixin(runtime, element) {
             $field.val($wrapper.attr('data-default')); // Use attr instead of data to force treating the default value as a string
             $wrapper.removeClass('is-set');
             $resetButton.removeClass('active').addClass('inactive');
+            if ($field.attr('id') == 'xb-field-edit-html_file') {
+                var textAreaParent = $('#xb-field-edit-string_html').parent();
+                textAreaParent.css('pointer-events', 'auto');
+                textAreaParent.css('opacity', '1');
+            }
         });
         if (type == 'html' && tinyMceAvailable) {
             tinyMCE.baseURL = baseUrl + "/js/vendor/tinymce/js/tinymce";
@@ -125,6 +131,8 @@ function StudioEditableXBlockMixin(runtime, element) {
 
         // Count all the number of items in the Xblock list
         var counter = 0;
+        var inputHtmlFile = $('#xb-field-edit-html_file');
+        var inputCssFile = $('#xb-field-edit-css_file');
         $(element).find('.xblock-list-item').each(function (i) {
            counter++;
         });
@@ -139,6 +147,7 @@ function StudioEditableXBlockMixin(runtime, element) {
                 '<select id="xblock-type{{forloop.counter}}"' + '" id="xblock-type' + (counter+1) + '">' +
                     '<option value="freetextresponse">Free Text Response</option>' +
                      '<option value="problem">Problem</option>' +
+                     '<option value="activetable">Active Table</option>' +
                 '</select>' +
                 '<button type="button" class="remove" style="padding: 8px 10px;">-</button>' +
                 '</div>'
@@ -157,8 +166,17 @@ function StudioEditableXBlockMixin(runtime, element) {
             newTextBoxDiv.appendTo("#TextBoxesGroup");
             counter++;
         });
-    });
+        htmlResult = $('#xb-field-download-html_file').attr('value');
 
+        if (htmlResult) {
+            var textAreaParent = $('#xb-field-edit-string_html').parent();
+            textAreaParent.css('pointer-events', 'none');
+            textAreaParent.css('opacity', '0.4');
+        }
+        cssResult = $('#xb-field-download-css_file').attr('value');
+        inputHtmlFile.change(readInputFile);
+        inputCssFile.change(readInputFile);
+    });
 
     $(".remove").on('click', function (e) {
 
@@ -191,10 +209,13 @@ function StudioEditableXBlockMixin(runtime, element) {
             })
              xblockList.push([xblockID, xblockType])
         });
-
         for (var i in fields) {
             var field = fields[i];
-            if (field.isSet()) {
+            if (field.isSet() && field.name == 'html_file') {
+                values[field.name] = htmlResult;
+            } else if (field.isSet() && field.name == 'css_file') {
+                values[field.name] = cssResult;
+            } else if (field.isSet()) {
                 values[field.name] = field.val();
             } else {
                 notSet.push(field.name);
@@ -221,4 +242,23 @@ function StudioEditableXBlockMixin(runtime, element) {
         e.preventDefault();
         runtime.notify('cancel', {});
     });
+
+    function readInputFile(input) {
+        var file = input.target.files[0];
+        var targetId = input.target.id;
+        var reader = new FileReader();
+        if (file) {
+            reader.onload = function(e) {
+                if (targetId == 'xb-field-edit-html_file') {
+                    htmlResult = e.target.result;
+                    var textAreaParent = $('#xb-field-edit-string_html').parent();
+                    textAreaParent.css('pointer-events', 'none');
+                    textAreaParent.css('opacity', '0.4')
+                } else {
+                    cssResult = e.target.result;
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
 }

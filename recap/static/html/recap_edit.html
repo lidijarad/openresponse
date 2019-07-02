@@ -34,6 +34,48 @@
                   </option>
                 {% endfor %}
               </select>
+            {% elif field.type == "string" and field.name == "html_file" %}
+              <input
+                type="button"
+                id="loadFileHtml"
+                value="{{field.value|yesno:" Upload New File,Upload File"}}"
+                onclick="document.getElementById('xb-field-edit-{{field.name}}').click();"
+              >
+              <input
+                type="file"
+                class="field-data-control"
+                id="xb-field-edit-{{field.name}}"
+                style="display:none;"
+              >
+              {%if field.value %}
+                <a
+                  href="data:text/plain;charset=utf-8, {{field.value|urlencode}}"
+                  download = "{{field.name}}.html"
+                  id="xb-field-download-{{field.name}}"
+                  value="{{field.value|default_if_none:""}}"
+                >Download</a>
+              {% endif %}
+            {% elif field.type == "string" and field.name == "css_file" %}
+              <input
+                type="button"
+                id="loadFileCss"
+                value="{{field.value|yesno:" Upload New File,Upload File"}}"
+                onclick="document.getElementById('xb-field-edit-{{field.name}}').click();"
+              >
+              <input
+                type="file"
+                class="field-data-control"
+                id="xb-field-edit-{{field.name}}"
+                style="display:none;"
+              >
+              {%if field.value %}
+                <a
+                  href="data:text/plain;charset=utf-8, {{field.value|urlencode}}"
+                  download = "{{field.name}}.css"
+                  id="xb-field-download-{{field.name}}"
+                  value="{{field.value|default_if_none:""}}"
+                >Download</a>
+              {% endif %}
             {% elif field.type == "string" or field.type == "datepicker" %}
               <input
                 type="text"
@@ -88,6 +130,7 @@
                         <select id="xblock-type{{forloop.counter}}">
                           <option value="freetextresponse"{% if item2 == "freetextresponse" %} selected="selected"{% endif %}>Free Text Response</option>
                           <option value="problem"{% if item2 == "problem" %} selected="selected"{% endif %}>Problem</option>
+                          <option value="activetable"{% if item2 == "activetable" %} selected="selected"{% endif %}>Active Table</option>
                         </select>
                         <button type="button" class="remove" style="padding: 8px 10px;">-</button>
                       </div>
