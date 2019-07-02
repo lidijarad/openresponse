@@ -3,6 +3,7 @@ import re
 import ast
 import logging
 import pkg_resources
+from enum import Enum
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from xblock.core import XBlock
@@ -25,7 +26,6 @@ loader = ResourceLoader(__name__)
 
 @XBlock.needs("field-data")
 @XBlock.needs("i18n")
-@XBlock.wants("user")
 class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
     """
     RecapXblock allows users to download a PDF copy of their answers to supported
@@ -174,6 +174,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             logger.info('Attempting to retrieve student item dictionary.')
             if not user:
                 user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+
             student_item_dictionary = dict(
                 student_id=user.id,
                 course_id=unicode(usage_key.course_key),
@@ -220,18 +221,21 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         blocks = []
         for usage_key, xblock_type in self.get_blocks(self.xblock_list):
-
             block = self.runtime.get_block(usage_key)
+
             if hasattr(block, 'custom_report_format'):
                 question = unicode(block.display_name)
+
                 try:
                     user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
                 except TypeError:
                     user = None
+
                 answer = block.custom_report_format(
                     user=user,
                     block=block,
                 )
+
                 blocks.append((question, answer))
             elif xblock_type == 'problem':
                 answer = u""
@@ -310,6 +314,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         for usage_key, xblock_type in self.get_blocks(block_list):
             try:
                 block = self.runtime.get_block(usage_key)
+
                 if hasattr(block, 'custom_report_format'):
                     question = unicode(block.display_name)
                     answer = block.custom_report_format(
@@ -335,24 +340,34 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         For the Recap Instructor dashboard, get HTML layout of user's answers
         '''
 
-        def update_layout(layout, pattern, use_block_layout=False):
+        def update_layout(layout, pattern, layout_type):
             '''
             '''
             block_sets = []
+            current = 0
             for m in re.finditer(pattern, layout):
                 try:
                     title = blocks[int(m.group(1)) - 1][0]
                     answer = blocks[int(m.group(1)) - 1][1]
-                    if use_block_layout:
+
+                    if layout_type == LayoutType.BLOCKS:
+                        subblocks = []
+                        for x in range(current, current + int(m.group(1))):
+                            if len(blocks) > x:
+                                subblocks.append((blocks[x][0], blocks[x][1]))
+                                current += 1
+                        answers = [block_layout.format(q, self.get_display_answer(a)) for q, a in subblocks]
+                        qa_str = unicode(''.join(answers))
+                    elif layout_type == LayoutType.SINGLE_BLOCK:
                         qa_str = unicode(block_layout).format(title, self.get_display_answer(answer))
-                    elif m.group(2) == 'TITLE':
+                    elif layout_type == LayoutType.TITLE:
                         qa_str = title
-                    elif m.group(2) == 'ANSWER':
+                    elif layout_type == LayoutType.ANSWER:
                         qa_str = unicode(self.get_display_answer(answer))
-                    else:
-                        qa_str = _('Bad Format')
+
                     block_sets.append((m.start(0), m.end(0), qa_str))
-                except IndexError:
+                except IndexError as error:
+                    logger.info('Update layout error: %s', error)
                     pass
 
             for start, end, string in reversed(block_sets):
@@ -360,10 +375,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
 
             return layout
 
-        if self.html_file:
-            template = self.html_file
-        else:
-            template = self.string_html
+        template = self.html_file if self.html_file else self.string_html
 
         block_layout = (
             '<p class="recap_question"><strong>{}</strong></p>'
@@ -380,13 +392,16 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         )
         layout = template.replace('[[CONTENT]]', qa_str)
 
-        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\.(TITLE)\]\]')
-        layout = update_layout(layout, pattern)
-        pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\.(ANSWER)\]\]')
-        layout = update_layout(layout, pattern)
+        pattern = re.compile(r'\[\[SINGLEBLOCK\(([0-9]+)\)\.(TITLE)\]\]')
+        layout = update_layout(layout, pattern, LayoutType.TITLE)
+        pattern = re.compile(r'\[\[SINGLEBLOCK\(([0-9]+)\)\.(ANSWER)\]\]')
+        layout = update_layout(layout, pattern, LayoutType.ANSWER)
+
+        pattern = re.compile(r'\[\[SINGLEBLOCK\(([0-9]+)\)\]\]')
+        layout = update_layout(layout, pattern, LayoutType.SINGLE_BLOCK)
 
         pattern = re.compile(r'\[\[BLOCKS\(([0-9]+)\)\]\]')
-        return update_layout(layout, pattern, True)
+        return update_layout(layout, pattern, LayoutType.BLOCKS)
 
     def studio_view(self, context):
         """
@@ -544,7 +559,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             id__in=map(int, student_ids_intersection)
         ).values('username', 'email', 'id')
 
-        return {"data": list(downloadable_users)}
+        return {'data': list(downloadable_users)}
 
     @staticmethod
     def workbench_scenarios():
@@ -561,3 +576,12 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 </vertical_demo>
              """),
         ]
+
+
+class LayoutType(Enum):
+    """
+    """
+    BLOCKS = 0
+    SINGLE_BLOCK = 1
+    ANSWER = 2
+    TITLE = 3

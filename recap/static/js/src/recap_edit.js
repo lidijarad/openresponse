@@ -131,8 +131,8 @@ function StudioEditableXBlockMixin(runtime, element) {
 
         // Count all the number of items in the Xblock list
         var counter = 0;
-        var inputHtmlFile= $('#xb-field-edit-html_file');
-        var inputCssFile= $('#xb-field-edit-css_file');
+        var inputHtmlFile = $('#xb-field-edit-html_file');
+        var inputCssFile = $('#xb-field-edit-css_file');
         $(element).find('.xblock-list-item').each(function (i) {
            counter++;
         });
@@ -166,13 +166,14 @@ function StudioEditableXBlockMixin(runtime, element) {
             newTextBoxDiv.appendTo("#TextBoxesGroup");
             counter++;
         });
-        htmlResult = $('#xb-field-download-html_file').attr("value");
-        if (htmlResult){
+        htmlResult = $('#xb-field-download-html_file').attr('value');
+
+        if (htmlResult) {
             var textAreaParent = $('#xb-field-edit-string_html').parent();
             textAreaParent.css('pointer-events', 'none');
             textAreaParent.css('opacity', '0.4');
         }
-        cssResult = $('#xb-field-download-css_file').attr("value");
+        cssResult = $('#xb-field-download-css_file').attr('value');
         inputHtmlFile.change(readInputFile);
         inputCssFile.change(readInputFile);
     });
@@ -242,13 +243,13 @@ function StudioEditableXBlockMixin(runtime, element) {
         runtime.notify('cancel', {});
     });
 
-    function readInputFile(input){
+    function readInputFile(input) {
         var file = input.target.files[0];
         var targetId = input.target.id;
         var reader = new FileReader();
         if (file) {
             reader.onload = function(e) {
-                if (targetId == 'xb-field-edit-html_file'){
+                if (targetId == 'xb-field-edit-html_file') {
                     htmlResult = e.target.result;
                     var textAreaParent = $('#xb-field-edit-string_html').parent();
                     textAreaParent.css('pointer-events', 'none');
@@ -259,6 +260,5 @@ function StudioEditableXBlockMixin(runtime, element) {
             };
             reader.readAsText(file);
         }
-
     }
 }
