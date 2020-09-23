@@ -5,7 +5,7 @@ import logging
 import pkg_resources
 from enum import Enum
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from xblock.core import XBlock
 from xblock.fields import Scope, String, List, Boolean
 from xblock.fragment import Fragment
@@ -177,8 +177,8 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
 
             student_item_dictionary = dict(
                 student_id=user.id,
-                course_id=unicode(usage_key.course_key),
-                item_id=unicode(usage_key),
+                course_id=str(usage_key.course_key),
+                item_id=str(usage_key),
                 item_type=usage_key.block_type,
             )
         except AttributeError:
@@ -211,7 +211,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         """
         answer_str = _("Nothing to recap.")
         if answer:
-            answer_str = re.sub(r'\n+', '<div></div>', unicode(answer))
+            answer_str = re.sub(r'\n+', '<div></div>', str(answer))
         return answer_str
 
     @XBlock.supports("multi_device")
@@ -224,7 +224,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             block = self.runtime.get_block(usage_key)
 
             if hasattr(block, 'custom_report_format'):
-                question = unicode(block.display_name)
+                question = str(block.display_name)
 
                 try:
                     user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
@@ -241,7 +241,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 answer = u""
                 question = u""
                 try:
-                    question = unicode(block.display_name)
+                    question = str(block.display_name)
                     answer = self.get_submission(usage_key)
                     if answer is None:
                         answer = block.lcp.get_question_answer_text()
@@ -316,7 +316,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                 block = self.runtime.get_block(usage_key)
 
                 if hasattr(block, 'custom_report_format'):
-                    question = unicode(block.display_name)
+                    question = str(block.display_name)
                     answer = block.custom_report_format(
                         user=user,
                         block=block,
@@ -326,7 +326,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                     answer = ""
                     question = ""
                     try:
-                        question = unicode(block.display_name)
+                        question = str(block.display_name)
                         answer = self.get_submission(usage_key, user)
                         blocks.append((question, answer))
                     except Exception as e:
@@ -357,13 +357,13 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
                                 subblocks.append((blocks[x][0], blocks[x][1]))
                                 current += 1
                         answers = [block_layout.format(q, self.get_display_answer(a)) for q, a in subblocks]
-                        qa_str = unicode(''.join(answers))
+                        qa_str = str(''.join(answers))
                     elif layout_type == LayoutType.SINGLE_BLOCK:
-                        qa_str = unicode(block_layout).format(title, self.get_display_answer(answer))
+                        qa_str = str(block_layout).format(title, self.get_display_answer(answer))
                     elif layout_type == LayoutType.TITLE:
                         qa_str = title
                     elif layout_type == LayoutType.ANSWER:
-                        qa_str = unicode(self.get_display_answer(answer))
+                        qa_str = str(self.get_display_answer(answer))
 
                     block_sets.append((m.start(0), m.end(0), qa_str))
                 except IndexError as error:
@@ -382,9 +382,9 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
             '<div class="recap_answer" '
             'style="page-break-before:always">{}</div>'
         )
-        qa_str = unicode(
+        qa_str = str(
             ''.join(
-                unicode(block_layout).format(
+                str(block_layout).format(
                     q,
                     self.get_display_answer(a)
                 ) for q, a in blocks
@@ -530,7 +530,7 @@ class RecapXBlock(StudioEditableXBlockMixin, XBlock, XBlockWithSettingsMixin):
         if "<h3>" in html:
             html = re.sub("<h3>(.*?)<\/h3>","<h3>{}</h3>".format(data['document_heading']), html)
         else:
-            html = u"<h3>{}</h3> \n {}".format(unicode(data['document_heading']), unicode(html))
+            html = u"<h3>{}</h3> \n {}".format(str(data['document_heading']), str(html))
 
         return {'html': html, 'user_name': user.username}
 
